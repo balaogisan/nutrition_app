@@ -85,7 +85,7 @@ struct ContentView: View {
     private func dailyDataView(for index: Int) -> some View {
         let data = dailyData[index]
         
-        VStack(spacing: 8) {
+        VStack(spacing: 20) {
             // 目標進度視圖
             goalProgressPage(for: data)
                 .frame(height: 140)
@@ -178,6 +178,7 @@ struct ContentView: View {
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
+            .padding(.top, 20)
             
             VStack(spacing: 6) {
                 let goals = DatabaseManager.shared.getNutritionGoals()
@@ -185,9 +186,10 @@ struct ContentView: View {
                 goalProgressRow(title: "蛋白質", current: data.goalProgress.proteinProgress, target: goals.dailyProtein, unit: "g", percentage: data.goalProgress.proteinPercentage, color: .blue)
                 goalProgressRow(title: "脂肪", current: data.goalProgress.fatProgress, target: goals.dailyFat, unit: "g", percentage: data.goalProgress.fatPercentage, color: .orange)
             }
-            Spacer() // 確保高度一致
+            .padding(.bottom, 20)
         }
-        .padding()
+        .padding(.horizontal)
+        .padding(.vertical, 10)
         .background(Color(.systemGray6))
         .cornerRadius(20)
     }
