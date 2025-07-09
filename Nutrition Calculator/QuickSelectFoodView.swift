@@ -1,15 +1,11 @@
-//
-//  QuickSelectFoodView.swift
-//  Nutrition Calculator
-//
-//  Created by SHAOYUN HSU on 2025/7/6.
-//
-
 import SwiftUI
 
 struct QuickSelectFoodView: View {
+    @Environment(\.dismiss) private var dismiss
     @State private var topFrequentFoods: [Food] = []
-    var onFoodSelected: (Food) -> Void
+    @State private var selectedFoods: [Food] = []
+    
+    var onDone: ([Food]) -> Void
     
     let columns = [
         GridItem(.flexible()),
@@ -24,36 +20,61 @@ struct QuickSelectFoodView: View {
     ]
     
     var body: some View {
-        ScrollView {
-            LazyVGrid(columns: columns, spacing: 10) {
-                ForEach(topFrequentFoods.indices, id: \.self) { index in
-                    let food = topFrequentFoods[index]
-                    let color = tagColors[index % tagColors.count] // 循環使用顏色
-                    
-                    Button(action: {
-                        onFoodSelected(food)
-                    }) {
-                        Text(String(food.name.prefix(3)))
-                            .font(.headline)
-                            .padding(.vertical, 10)
-                            .padding(.horizontal, 5)
-                            .frame(maxWidth: .infinity)
-                            .background(color.opacity(0.2))
-                            .cornerRadius(10)
-                            .foregroundColor(color)
+        NavigationView {
+            ScrollView {
+                LazyVGrid(columns: columns, spacing: 10) {
+                    ForEach(topFrequentFoods.indices, id: \.self) { index in
+                        let food = topFrequentFoods[index]
+                        let color = tagColors[index % tagColors.count]
+                        let isSelected = selectedFoods.contains(where: { $0.id == food.id })
+                        
+                        Button(action: {
+                            if isSelected {
+                                selectedFoods.removeAll(where: { $0.id == food.id })
+                            } else {
+                                selectedFoods.append(food)
+                            }
+                        }) {
+                            Text(String(food.name.prefix(3)))
+                                .font(.headline)
+                                .padding(.vertical, 10)
+                                .padding(.horizontal, 5)
+                                .frame(maxWidth: .infinity)
+                                .background(isSelected ? color.opacity(0.5) : color.opacity(0.2))
+                                .cornerRadius(10)
+                                .foregroundColor(color)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .stroke(color, lineWidth: isSelected ? 2 : 0)
+                                )
+                        }
+                    }
+                }
+                .padding()
+            }
+            .navigationTitle("快速選取食物")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("取消") {
+                        dismiss()
+                    }
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("完成") {
+                        onDone(selectedFoods)
                     }
                 }
             }
-            .padding()
-        }
-        .onAppear {
-            topFrequentFoods = DatabaseManager.shared.getTopFrequentFoods(limit: 20)
+            .onAppear {
+                topFrequentFoods = DatabaseManager.shared.getTopFrequentFoods(limit: 20)
+            }
         }
     }
 }
 
 #Preview {
-    QuickSelectFoodView(onFoodSelected: { food in
-        print("Selected: \(food.name)")
+    QuickSelectFoodView(onDone: { foods in
+        print("Selected \(foods.count) foods")
     })
 }

@@ -22,6 +22,7 @@ struct ContentView: View {
     @State private var currentPageIndex: Int = 6 // 預設顯示今日 (第7天)
     @State private var showAdd = false
     @State private var showSettings = false
+    @State private var showQuickSelect = false
 
     private var dateFormatter: DateFormatter {
         let formatter = DateFormatter()
@@ -66,6 +67,23 @@ struct ContentView: View {
             .sheet(isPresented: $showSettings) {
                 SettingsView()
             }
+            .fullScreenCover(isPresented: $showQuickSelect) {
+                if let index = dailyData.firstIndex(where: { Calendar.current.isDateInToday($0.date) }) {
+                    QuickSelectFoodView(onDone: { selectedFoods in
+                        for food in selectedFoods {
+                            DatabaseManager.shared.addFood(
+                                name: food.name,
+                                calories: food.calories,
+                                protein: food.protein,
+                                fat: food.fat,
+                                carbs: food.carbs
+                            )
+                        }
+                        refreshData(forDayIndex: index)
+                        showQuickSelect = false // Dismiss the sheet
+                    })
+                }
+            }
         }
     }
     
@@ -96,34 +114,16 @@ struct ContentView: View {
             
             // 根據是否為今日，顯示不同的食物列表或快速選取頁面
             if Calendar.current.isDateInToday(data.date) {
-                TabView(selection: $dailyData[index].summaryPageIndex) {
-                    // 今日食物清單頁
-                    List {
-                        ForEach(data.foods) { food in
-                            foodRow(food: food)
-                        }
-                        .onDelete { offsets in
-                            deleteFood(at: offsets, forDayIndex: index)
-                        }
+                // 今日食物清單頁
+                List {
+                    ForEach(data.foods) { food in
+                        foodRow(food: food)
                     }
-                    .listStyle(PlainListStyle())
-                    .tag(0)
-                    
-                    // 快速選取食物頁
-                    QuickSelectFoodView(onFoodSelected: { food in
-                        DatabaseManager.shared.addFood(
-                            name: food.name,
-                            calories: food.calories,
-                            protein: food.protein,
-                            fat: food.fat,
-                            carbs: food.carbs
-                        )
-                        refreshData(forDayIndex: index)
-                        dailyData[index].summaryPageIndex = 0 // 切回食物清單頁
-                    })
-                    .tag(1)
+                    .onDelete { offsets in
+                        deleteFood(at: offsets, forDayIndex: index)
+                    }
                 }
-                .tabViewStyle(PageTabViewStyle(indexDisplayMode: .always))
+                .listStyle(PlainListStyle())
             } else {
                 // 歷史食物清單頁
                 List {
@@ -149,9 +149,7 @@ struct ContentView: View {
             if Calendar.current.isDateInToday(date) {
                 Button(action: {
                     // 切換到快速選取食物頁面
-                    if let index = dailyData.firstIndex(where: { Calendar.current.isDateInToday($0.date) }) {
-                        dailyData[index].summaryPageIndex = 1
-                    }
+                    showQuickSelect = true
                 }) {
                     Text("快速選取食物")
                         .font(.subheadline)
@@ -221,7 +219,7 @@ struct ContentView: View {
                             Button(action: { adjustPortions(for: food, change: -1.0) }) {
                                 Image(systemName: "minus.circle").foregroundColor(.red).font(.title3)
                             }
-                            .buttonStyle(PlainButtonStyle())
+                            .buttonStyle(BorderlessButtonStyle())
                             
                             Text("\(food.portions, specifier: "%.0f")份")
                                 .font(.subheadline).foregroundColor(.blue)
@@ -231,7 +229,7 @@ struct ContentView: View {
                             Button(action: { adjustPortions(for: food, change: 1.0) }) {
                                 Image(systemName: "plus.circle").foregroundColor(.green).font(.title3)
                             }
-                            .buttonStyle(PlainButtonStyle())
+                            .buttonStyle(BorderlessButtonStyle())
                         }
                     }
                 }
