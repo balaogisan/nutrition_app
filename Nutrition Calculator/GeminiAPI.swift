@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import UIKit
 
 class GeminiAPI {
     static let shared = GeminiAPI()
@@ -16,11 +17,55 @@ class GeminiAPI {
         }
         return apiKey
     }
+    
+    private func compressImage(_ imageData: Data) -> Data? {
+        guard let originalImage = UIImage(data: imageData) else {
+            print("❌ Failed to create UIImage from data")
+            return nil
+        }
+        
+        let originalSize = originalImage.size
+        let newSize = CGSize(width: originalSize.width / 2, height: originalSize.height / 2)
+        
+        print("📐 Original size: \(originalSize), New size: \(newSize)")
+        
+        UIGraphicsBeginImageContextWithOptions(newSize, false, 1.0)
+        originalImage.draw(in: CGRect(origin: .zero, size: newSize))
+        let resizedImage = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        
+        guard let compressedImage = resizedImage else {
+            print("❌ Failed to resize image")
+            return nil
+        }
+        
+        guard let compressedData = compressedImage.jpegData(compressionQuality: 0.5) else {
+            print("❌ Failed to compress image to JPEG")
+            return nil
+        }
+        
+        let compressionRatio = Double(compressedData.count) / Double(imageData.count)
+        print("📊 Compression ratio: \(String(format: "%.1f", compressionRatio * 100))% (\(imageData.count) → \(compressedData.count) bytes)")
+        
+        return compressedData
+    }
 
     func analyzeFood(imageData: Data, completion: @escaping (Result<String, Error>) -> Void) {
         print("🔍 Gemini API: Starting food analysis")
-        print("📸 Image data size: \(imageData.count) bytes")
+        print("📸 Original image data size: \(imageData.count) bytes")
         
+        // Compress the image before sending to API
+        guard let compressedImageData = compressImage(imageData) else {
+            print("❌ Failed to compress image, using original")
+            analyzeWithImageData(imageData, completion: completion)
+            return
+        }
+        
+        print("✅ Using compressed image: \(compressedImageData.count) bytes")
+        analyzeWithImageData(compressedImageData, completion: completion)
+    }
+    
+    private func analyzeWithImageData(_ imageData: Data, completion: @escaping (Result<String, Error>) -> Void) {
         guard let url = URL(string: "https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent") else {
             completion(.failure(NSError(domain: "Invalid URL", code: 0, userInfo: nil)))
             return
