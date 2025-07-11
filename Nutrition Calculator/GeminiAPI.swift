@@ -75,6 +75,7 @@ class GeminiAPI {
         request.httpMethod = "POST"
         request.setValue(apiKey, forHTTPHeaderField: "x-goog-api-key")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("hsu.Nutrition-Calculator", forHTTPHeaderField: "X-Ios-Bundle-Identifier")
 
         let base64Image = imageData.base64EncodedString()
         let prompt = "這是一張食物照片，請直接用 JSON 回答如下格式：{\"name\":..., \"calories\":..., \"protein\":..., \"fat\":..., \"carbs\":...}"

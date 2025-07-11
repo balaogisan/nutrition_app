@@ -197,7 +197,7 @@ struct ContentView: View {
             Text("\(title): \(current, specifier: "%.1f") / \(target, specifier: "%.1f") \(unit)")
                 .font(.subheadline).foregroundColor(color)
             Spacer()
-            Text("\(percentage, specifier: "%.0f")%")
+            Text("\(percentage, specifier: "%.1f")%")
                 .font(.system(.caption, design: .rounded).bold())
                 .foregroundColor(color)
                 .padding(.horizontal, 8)
@@ -233,7 +233,7 @@ struct ContentView: View {
                         }
                     }
                 }
-                Text("熱量：\(food.actualCalories, specifier: "%.0f") kcal   蛋白質：\(food.actualProtein, specifier: "%.1f")g")
+                Text("熱量：\(food.actualCalories, specifier: "%.1f") kcal   蛋白質：\(food.actualProtein, specifier: "%.1f")g")
                     .font(.subheadline)
                 Text("脂肪：\(food.actualFat, specifier: "%.1f")g   碳水：\(food.actualCarbs, specifier: "%.1f")g")
                     .font(.caption).foregroundColor(.secondary)

@@ -37,7 +37,7 @@ struct FoodAddView: View {
                             }) {
                                 VStack(alignment: .leading) {
                                     Text(food.name).font(.headline)
-                                    Text("熱量: \(food.calories, specifier: "%.0f") kcal, 蛋白: \(food.protein, specifier: "%.1f")g")
+                                    Text("熱量: \(food.calories, specifier: "%.1f") kcal, 蛋白: \(food.protein, specifier: "%.1f")g")
                                         .font(.caption)
                                         .foregroundColor(.secondary)
                                 }
@@ -116,7 +116,7 @@ struct FoodAddView: View {
 
     private func selectFood(_ food: Food) {
         name = food.name
-        calories = String(format: "%.0f", food.calories)
+        calories = String(format: "%.1f", food.calories)
         protein = String(format: "%.1f", food.protein)
         fat = String(format: "%.1f", food.fat)
         carbs = String(format: "%.1f", food.carbs)
