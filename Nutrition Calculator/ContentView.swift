@@ -34,7 +34,7 @@ struct ContentView: View {
         NavigationView {
             VStack(spacing: 0) {
                 if dailyData.isEmpty {
-                    ProgressView("載入中...")
+                    ProgressView(String(localized: "loading_message"))
                 } else {
                     TabView(selection: $currentPageIndex) {
                         ForEach(dailyData.indices, id: \.self) { index in
@@ -56,7 +56,7 @@ struct ContentView: View {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: { showAdd = true }) {
                         Image(systemName: "plus")
-                        Text("新增今日食物")
+                        Text(String(localized: "add_food_button"))
                     }
                 }
             }
@@ -89,10 +89,10 @@ struct ContentView: View {
     
     // 根據當前頁面動態生成導覽列標題
     private var navigationTitle: String {
-        guard !dailyData.isEmpty else { return "載入中..." }
+        guard !dailyData.isEmpty else { return String(localized: "loading_message") }
         let date = dailyData[currentPageIndex].date
         if Calendar.current.isDateInToday(date) {
-            return "今日"
+            return String(localized: "today_title")
         } else {
             return dateFormatter.string(from: date)
         }
@@ -139,7 +139,7 @@ struct ContentView: View {
     // 移到 List 上方的標題
     private func listHeader(for date: Date) -> some View {
         HStack {
-            Text("食物清單")
+            Text(String(localized: "food_list_title"))
                 .font(.title2)
                 .fontWeight(.bold)
                 .padding(.horizontal)
@@ -151,7 +151,7 @@ struct ContentView: View {
                     // 切換到快速選取食物頁面
                     showQuickSelect = true
                 }) {
-                    Text("快速選取食物")
+                    Text(String(localized: "quick_select_button"))
                         .font(.subheadline)
                         .foregroundColor(.blue)
                         .padding(.horizontal, 10)
@@ -168,11 +168,11 @@ struct ContentView: View {
     private func goalProgressPage(for data: DailyData) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text("目標進度")
+                Text(String(localized: "goal_progress_title"))
                     .font(.title3)
                     .fontWeight(.bold)
                 Spacer()
-                Text("共 \(data.summary.foodCount) 項食物")
+                Text(String(format: NSLocalizedString("total_foods_count_message", comment: ""), data.summary.foodCount))
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
@@ -180,9 +180,9 @@ struct ContentView: View {
             
             VStack(spacing: 6) {
                 let goals = DatabaseManager.shared.getNutritionGoals()
-                goalProgressRow(title: "熱量", current: data.goalProgress.caloriesProgress, target: goals.dailyCalories, unit: "kcal", percentage: data.goalProgress.caloriesPercentage, color: .red)
-                goalProgressRow(title: "蛋白質", current: data.goalProgress.proteinProgress, target: goals.dailyProtein, unit: "g", percentage: data.goalProgress.proteinPercentage, color: .blue)
-                goalProgressRow(title: "脂肪", current: data.goalProgress.fatProgress, target: goals.dailyFat, unit: "g", percentage: data.goalProgress.fatPercentage, color: .orange)
+                goalProgressRow(title: String(localized: "calories_title"), current: data.goalProgress.caloriesProgress, target: goals.dailyCalories, unit: "kcal", percentage: data.goalProgress.caloriesPercentage, color: .red)
+                goalProgressRow(title: String(localized: "protein_title"), current: data.goalProgress.proteinProgress, target: goals.dailyProtein, unit: "g", percentage: data.goalProgress.proteinPercentage, color: .blue)
+                goalProgressRow(title: String(localized: "fat_title"), current: data.goalProgress.fatProgress, target: goals.dailyFat, unit: "g", percentage: data.goalProgress.fatPercentage, color: .orange)
             }
             .padding(.bottom, 20)
         }
@@ -221,7 +221,7 @@ struct ContentView: View {
                             }
                             .buttonStyle(BorderlessButtonStyle())
                             
-                            Text("\(food.portions, specifier: "%.0f")份")
+                            Text(String(format: NSLocalizedString("portions_unit", comment: ""), food.portions))
                                 .font(.subheadline).foregroundColor(.blue)
                                 .padding(.horizontal, 8).padding(.vertical, 2)
                                 .background(Color.blue.opacity(0.1)).cornerRadius(8)
@@ -233,11 +233,11 @@ struct ContentView: View {
                         }
                     }
                 }
-                Text("熱量：\(food.actualCalories, specifier: "%.1f") kcal   蛋白質：\(food.actualProtein, specifier: "%.1f")g")
+                Text(String(format: NSLocalizedString("calories_protein_info", comment: ""), food.actualCalories, food.actualProtein))
                     .font(.subheadline)
-                Text("脂肪：\(food.actualFat, specifier: "%.1f")g   碳水：\(food.actualCarbs, specifier: "%.1f")g")
+                Text(String(format: NSLocalizedString("fat_carbs_info", comment: ""), food.actualFat, food.actualCarbs))
                     .font(.caption).foregroundColor(.secondary)
-                Text("日期：\(food.date.formatted(.dateTime.year().month().day().hour().minute()))")
+                Text(String(format: NSLocalizedString("date_info", comment: ""), food.date.formatted(.dateTime.year().month().day().hour().minute()) as CVarArg))
                     .font(.caption2).foregroundColor(.gray)
             }
         }

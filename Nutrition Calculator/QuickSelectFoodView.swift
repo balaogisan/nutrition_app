@@ -52,16 +52,16 @@ struct QuickSelectFoodView: View {
                 }
                 .padding()
             }
-            .navigationTitle("快速選取食物")
+            .navigationTitle(String(localized: "quick_select_food_navigation_title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("取消") {
+                    Button(String(localized: "cancel_button")) {
                         dismiss()
                     }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("完成") {
+                    Button(String(localized: "done_button")) {
                         onDone(selectedFoods)
                     }
                 }

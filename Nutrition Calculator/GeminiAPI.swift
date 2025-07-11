@@ -12,8 +12,10 @@ class GeminiAPI {
     static let shared = GeminiAPI()
     
     private var apiKey: String {
-        guard let apiKey = Bundle.main.object(forInfoDictionaryKey: "GEMINI_API_KEY") as? String else {
-            fatalError("GEMINI_API_KEY not found in Info.plist")
+        guard let path = Bundle.main.path(forResource: "Config", ofType: "plist"),
+              let plist = NSDictionary(contentsOfFile: path),
+              let apiKey = plist["GEMINI_API_KEY"] as? String else {
+            fatalError("GEMINI_API_KEY not found in Config.plist")
         }
         return apiKey
     }

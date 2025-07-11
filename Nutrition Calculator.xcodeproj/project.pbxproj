@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B719BA902E21574600312174 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = B719BA8E2E21574600312174 /* Localizable.strings */; };
+		B719BA942E21576700312174 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = B719BA922E21576700312174 /* Localizable.strings */; };
 		B7C2E8F82E18CE1100CB6A1C /* SQLite in Frameworks */ = {isa = PBXBuildFile; productRef = B7C2E8F72E18CE1100CB6A1C /* SQLite */; };
 /* End PBXBuildFile section */
 
@@ -28,14 +30,29 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		B719BA8D2E21574600312174 /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant"; path = Localizable.strings; sourceTree = "<group>"; };
+		B719BA912E21576700312174 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = Localizable.strings; sourceTree = "<group>"; };
 		B7C2E8C92E18C9B200CB6A1C /* Nutrition Calculator.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Nutrition Calculator.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B7C2E8D72E18C9B500CB6A1C /* Nutrition CalculatorTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Nutrition CalculatorTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B7C2E8E12E18C9B500CB6A1C /* Nutrition CalculatorUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Nutrition CalculatorUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		B719BA532E2149AE00312174 /* Exceptions for "Nutrition Calculator" folder in "Nutrition Calculator" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				"/Localized: Localizable.strings",
+			);
+			target = B7C2E8C82E18C9B200CB6A1C /* Nutrition Calculator */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		B7C2E8CB2E18C9B200CB6A1C /* Nutrition Calculator */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				B719BA532E2149AE00312174 /* Exceptions for "Nutrition Calculator" folder in "Nutrition Calculator" target */,
+			);
 			path = "Nutrition Calculator";
 			sourceTree = "<group>";
 		};
@@ -77,9 +94,27 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		B719BA8F2E21574600312174 /* zh-Hant.lproj */ = {
+			isa = PBXGroup;
+			children = (
+				B719BA8E2E21574600312174 /* Localizable.strings */,
+			);
+			path = "zh-Hant.lproj";
+			sourceTree = "<group>";
+		};
+		B719BA932E21576700312174 /* en.lproj */ = {
+			isa = PBXGroup;
+			children = (
+				B719BA922E21576700312174 /* Localizable.strings */,
+			);
+			path = en.lproj;
+			sourceTree = "<group>";
+		};
 		B7C2E8C02E18C9B200CB6A1C = {
 			isa = PBXGroup;
 			children = (
+				B719BA932E21576700312174 /* en.lproj */,
+				B719BA8F2E21574600312174 /* zh-Hant.lproj */,
 				B7C2E8CB2E18C9B200CB6A1C /* Nutrition Calculator */,
 				B7C2E8DA2E18C9B500CB6A1C /* Nutrition CalculatorTests */,
 				B7C2E8E42E18C9B500CB6A1C /* Nutrition CalculatorUITests */,
@@ -198,6 +233,12 @@
 			knownRegions = (
 				en,
 				Base,
+				"zh-Hant",
+				"zh-Hant 2",
+				"en 2",
+				"zh-Hant 3",
+				"en 3",
+				"en 4",
 			);
 			mainGroup = B7C2E8C02E18C9B200CB6A1C;
 			minimizedProjectReferenceProxies = 1;
@@ -221,6 +262,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B719BA942E21576700312174 /* Localizable.strings in Resources */,
+				B719BA902E21574600312174 /* Localizable.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -276,6 +319,25 @@
 			targetProxy = B7C2E8E22E18C9B500CB6A1C /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		B719BA8E2E21574600312174 /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				B719BA8D2E21574600312174 /* zh-Hant */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+		B719BA922E21576700312174 /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				B719BA912E21576700312174 /* en */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		B7C2E8E92E18C9B500CB6A1C /* Debug */ = {
@@ -424,7 +486,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 15.5;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = "hsu.Nutrition-Calculator";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -465,7 +527,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 15.5;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = "hsu.Nutrition-Calculator";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;

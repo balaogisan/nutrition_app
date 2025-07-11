@@ -1,5 +1,6 @@
 Nutrition Calculator/Secrets.xcconfig
 Nutrition-Calculator-Info.plist
+Nutrition Calculator/Config.plist
 Ref/
 xcuserdata/
 Package.resolved

@@ -27,8 +27,8 @@ struct FoodAddView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section(header: Text("食物資訊")) {
-                    TextField("食物名稱", text: $name)
+                Section(header: Text(String(localized: "food_info_section_header"))) {
+                    TextField(String(localized: "food_name_placeholder"), text: $name)
                     
                     if isSearching && !searchResults.isEmpty {
                         List(searchResults) { food in
@@ -37,7 +37,7 @@ struct FoodAddView: View {
                             }) {
                                 VStack(alignment: .leading) {
                                     Text(food.name).font(.headline)
-                                    Text("熱量: \(food.calories, specifier: "%.1f") kcal, 蛋白: \(food.protein, specifier: "%.1f")g")
+                                    Text(String(format: NSLocalizedString("food_search_result_info", comment: ""), food.calories, food.protein))
                                         .font(.caption)
                                         .foregroundColor(.secondary)
                                 }
@@ -45,24 +45,24 @@ struct FoodAddView: View {
                         }
                     }
                     
-                    TextField("熱量（kcal）", text: $calories)
+                    TextField(String(localized: "calories_placeholder"), text: $calories)
                         .keyboardType(.decimalPad)
-                    TextField("蛋白質（g）", text: $protein)
+                    TextField(String(localized: "protein_placeholder"), text: $protein)
                         .keyboardType(.decimalPad)
-                    TextField("脂肪（g）", text: $fat)
+                    TextField(String(localized: "fat_placeholder"), text: $fat)
                         .keyboardType(.decimalPad)
-                    TextField("碳水化合物（g）", text: $carbs)
+                    TextField(String(localized: "carbs_placeholder"), text: $carbs)
                         .keyboardType(.decimalPad)
                 }
                 
-                Section(header: Text("從相簿辨識食物")) {
+                Section(header: Text(String(localized: "recognize_food_from_album_section_header"))) {
                     PhotosPicker(
                         selection: $selectedPhoto,
                         matching: .images,
                         photoLibrary: .shared()) {
                             HStack {
                                 Image(systemName: "photo.on.rectangle.angled")
-                                Text(imageData == nil ? "選擇照片" : "已選照片")
+                                Text(imageData == nil ? String(localized: "select_photo_button_title") : String(localized: "photo_selected_button_title"))
                             }
                         }
                     if let imageData, let uiImage = UIImage(data: imageData) {
@@ -73,7 +73,7 @@ struct FoodAddView: View {
                     }
                     
                     if let imageData {
-                        Button("用 Gemini 分析照片自動填入") {
+                        Button(String(localized: "analyze_photo_with_gemini_button")) {
                             analyzeWithGemini(imageData: imageData)
                         }
                     }
@@ -97,15 +97,15 @@ struct FoodAddView: View {
                     }
                 }
             }
-            .navigationTitle("新增食物")
+            .navigationTitle(String(localized: "add_food_navigation_title"))
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("取消") {
+                    Button(String(localized: "cancel_button")) {
                         dismiss()
                     }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("儲存") {
+                    Button(String(localized: "save_button")) {
                         saveFood()
                     }
                     .disabled(name.isEmpty || calories.isEmpty || protein.isEmpty || fat.isEmpty || carbs.isEmpty)

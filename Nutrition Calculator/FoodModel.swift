@@ -48,8 +48,8 @@ enum Gender: String, CaseIterable {
     
     var displayName: String {
         switch self {
-        case .male: return "男性"
-        case .female: return "女性"
+        case .male: return String(localized: "gender_male")
+        case .female: return String(localized: "gender_female")
         }
     }
 }
@@ -60,8 +60,8 @@ enum FitnessGoal: String, CaseIterable {
     
     var displayName: String {
         switch self {
-        case .buildMuscle: return "增肌"
-        case .loseFat: return "減脂"
+        case .buildMuscle: return String(localized: "fitness_goal_build_muscle")
+        case .loseFat: return String(localized: "fitness_goal_lose_fat")
         }
     }
     

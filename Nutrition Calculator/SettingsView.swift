@@ -30,21 +30,21 @@ struct SettingsView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section(header: Text("個人資料")) {
+                Section(header: Text(String(localized: "personal_info_section_header"))) {
                     HStack {
-                        Text("年齡")
+                        Text(String(localized: "age_label"))
                         Spacer()
-                        TextField("30", text: $age)
+                        TextField(String(localized: "age_placeholder"), text: $age)
                             .keyboardType(.numberPad)
                             .multilineTextAlignment(.trailing)
-                        Text("歲")
+                        Text(String(localized: "years_old_unit"))
                             .foregroundColor(.secondary)
                     }
                     
                     HStack {
-                        Text("性別")
+                        Text(String(localized: "gender_label"))
                         Spacer()
-                        Picker("性別", selection: $selectedGender) {
+                        Picker(String(localized: "gender_picker_title"), selection: $selectedGender) {
                             ForEach(Gender.allCases, id: \.self) { gender in
                                 Text(gender.displayName).tag(gender)
                             }
@@ -54,39 +54,39 @@ struct SettingsView: View {
                     }
                     
                     HStack {
-                        Text("體重")
+                        Text(String(localized: "weight_label"))
                         Spacer()
-                        TextField("70", text: $weight)
+                        TextField(String(localized: "weight_placeholder"), text: $weight)
                             .keyboardType(.decimalPad)
                             .multilineTextAlignment(.trailing)
-                        Text("kg")
+                        Text(String(localized: "kg_unit"))
                             .foregroundColor(.secondary)
                     }
                     
                     HStack {
-                        Text("體脂率")
+                        Text(String(localized: "body_fat_percentage_label"))
                         Spacer()
-                        TextField("15", text: $bodyFatPercentage)
+                        TextField(String(localized: "body_fat_percentage_placeholder"), text: $bodyFatPercentage)
                             .keyboardType(.decimalPad)
                             .multilineTextAlignment(.trailing)
-                        Text("%")
+                        Text(String(localized: "percentage_unit"))
                             .foregroundColor(.secondary)
                     }
                     
                     HStack {
-                        Text("身高")
+                        Text(String(localized: "height_label"))
                         Spacer()
-                        TextField("170", text: $height)
+                        TextField(String(localized: "height_placeholder"), text: $height)
                             .keyboardType(.decimalPad)
                             .multilineTextAlignment(.trailing)
-                        Text("cm")
+                        Text(String(localized: "cm_unit"))
                             .foregroundColor(.secondary)
                     }
                     
                     HStack {
-                        Text("健身目標")
+                        Text(String(localized: "fitness_goal_label"))
                         Spacer()
-                        Picker("健身目標", selection: $selectedFitnessGoal) {
+                        Picker(String(localized: "fitness_goal_picker_title"), selection: $selectedFitnessGoal) {
                             ForEach(FitnessGoal.allCases, id: \.self) { goal in
                                 Text(goal.displayName).tag(goal)
                             }
@@ -96,48 +96,48 @@ struct SettingsView: View {
                     }
                 }
                 
-                Section(header: Text("每日營養目標")) {
+                Section(header: Text(String(localized: "daily_nutrition_goals_section_header"))) {
                     HStack {
-                        Text("熱量目標")
+                        Text(String(localized: "calories_goal_label"))
                             .foregroundColor(.red)
                         Spacer()
-                        TextField("2000", text: $dailyCalories)
+                        TextField(String(localized: "calories_goal_placeholder"), text: $dailyCalories)
                             .keyboardType(.decimalPad)
                             .multilineTextAlignment(.trailing)
-                        Text("kcal")
+                        Text(String(localized: "kcal_unit"))
                             .foregroundColor(.secondary)
                     }
                     
                     HStack {
-                        Text("蛋白質目標")
+                        Text(String(localized: "protein_goal_label"))
                             .foregroundColor(.blue)
                         Spacer()
-                        TextField("50", text: $dailyProtein)
+                        TextField(String(localized: "protein_goal_placeholder"), text: $dailyProtein)
                             .keyboardType(.decimalPad)
                             .multilineTextAlignment(.trailing)
-                        Text("g")
+                        Text(String(localized: "g_unit"))
                             .foregroundColor(.secondary)
                     }
                     
                     HStack {
-                        Text("脂肪目標")
+                        Text(String(localized: "fat_goal_label"))
                             .foregroundColor(.orange)
                         Spacer()
-                        TextField("65", text: $dailyFat)
+                        TextField(String(localized: "fat_goal_placeholder"), text: $dailyFat)
                             .keyboardType(.decimalPad)
                             .multilineTextAlignment(.trailing)
-                        Text("g")
+                        Text(String(localized: "g_unit"))
                             .foregroundColor(.secondary)
                     }
                     
-                    Button("根據個人資料生成建議目標") {
+                    Button(String(localized: "generate_recommendation_button")) {
                         generateRecommendations()
                     }
                     .foregroundColor(.orange)
                 }
                 
-                Section(footer: Text("設定個人資料和每日營養攝取目標，幫助您追蹤營養均衡")) {
-                    Button("儲存設定") {
+                Section(footer: Text(String(localized: "settings_footer_text"))) {
+                    Button(String(localized: "save_settings_button")) {
                         saveSettings()
                     }
                     .frame(maxWidth: .infinity)
@@ -147,11 +147,11 @@ struct SettingsView: View {
                     .cornerRadius(10)
                 }
             }
-            .navigationTitle("營養目標設定")
+            .navigationTitle(String(localized: "nutrition_goal_settings_navigation_title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("取消") {
+                    Button(String(localized: "cancel_button")) {
                         dismiss()
                     }
                 }
@@ -159,25 +159,25 @@ struct SettingsView: View {
             .onAppear {
                 loadCurrentSettings()
             }
-            .alert("設定已儲存", isPresented: $showSaveAlert) {
-                Button("確定") {
+            .alert(String(localized: "settings_saved_alert_title"), isPresented: $showSaveAlert) {
+                Button(String(localized: "ok_button")) {
                     dismiss()
                 }
             } message: {
-                Text("您的個人資料和營養目標已成功更新")
+                Text(String(localized: "settings_saved_alert_message"))
             }
-            .alert("建議營養目標", isPresented: $showRecommendationAlert) {
-                Button("使用建議值") {
+            .alert(String(localized: "recommended_nutrition_goals_alert_title"), isPresented: $showRecommendationAlert) {
+                Button(String(localized: "use_recommended_values_button")) {
                     if let recommended = recommendedGoals {
                         dailyCalories = String(format: "%.0f", recommended.dailyCalories)
                         dailyProtein = String(format: "%.1f", recommended.dailyProtein)
                         dailyFat = String(format: "%.1f", recommended.dailyFat)
                     }
                 }
-                Button("取消", role: .cancel) { }
+                Button(String(localized: "cancel_button"), role: .cancel) { }
             } message: {
                 if let recommended = recommendedGoals {
-                    Text("根據您的個人資料和「\(selectedFitnessGoal.displayName)」目標，建議的每日營養目標為：\n熱量：\(recommended.dailyCalories, specifier: "%.0f") kcal\n蛋白質：\(recommended.dailyProtein, specifier: "%.1f") g\n脂肪：\(recommended.dailyFat, specifier: "%.1f") g")
+                    Text(String(format: NSLocalizedString("recommended_goals_message", comment: ""), selectedFitnessGoal.displayName as CVarArg, recommended.dailyCalories, recommended.dailyProtein, recommended.dailyFat))
                 }
             }
         }
