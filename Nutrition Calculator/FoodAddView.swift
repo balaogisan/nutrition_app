@@ -22,6 +22,8 @@ struct FoodAddView: View {
     @State private var searchResults: [Food] = []
     @State private var isSearching = false
 
+    @State private var isAnalyzing = false
+
     var onSave: (() -> Void)? // 回傳用 closure
 
     var body: some View {
@@ -72,10 +74,13 @@ struct FoodAddView: View {
                             .frame(height: 150)
                     }
                     
-                    if let imageData {
+                    if isAnalyzing {
+                        ProgressView(String(localized: "analyzing_message"))
+                    } else if let imageData {
                         Button(String(localized: "analyze_photo_with_gemini_button")) {
                             analyzeWithGemini(imageData: imageData)
                         }
+                        .disabled(isAnalyzing)
                     }
                 }
             }
@@ -145,6 +150,7 @@ struct FoodAddView: View {
     }
     
     private func analyzeWithGemini(imageData: Data) {
+        isAnalyzing = true
         print("🍽️ FoodAddView: Starting Gemini analysis")
         
         GeminiAPI.shared.analyzeFood(imageData: imageData) { result in
@@ -179,10 +185,10 @@ struct FoodAddView: View {
                         let oldCarbs = self.carbs
                         
                         self.name = (dict["name"] as? String) ?? ""
-                        if let cal = dict["calories"] { self.calories = "\(cal)" }
-                        if let pro = dict["protein"] { self.protein = "\(pro)" }
-                        if let fat = dict["fat"] { self.fat = "\(fat)" }
-                        if let car = dict["carbs"] { self.carbs = "\(car)" }
+                        self.calories = (dict["calories"] as? NSNumber)?.stringValue ?? "0"
+                        self.protein = (dict["protein"] as? NSNumber)?.stringValue ?? "0"
+                        self.fat = (dict["fat"] as? NSNumber)?.stringValue ?? "0"
+                        self.carbs = (dict["carbs"] as? NSNumber)?.stringValue ?? "0"
                         
                         print("🔄 FoodAddView: Updated fields:")
                         print("   Name: '\(oldName)' → '\(self.name)'")
@@ -203,6 +209,9 @@ struct FoodAddView: View {
                 }
             case .failure(let error):
                 print("❌ FoodAddView: Gemini analysis failed: \(error.localizedDescription)")
+            }
+            DispatchQueue.main.async {
+                isAnalyzing = false
             }
         }
     }
