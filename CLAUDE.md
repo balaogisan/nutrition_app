@@ -11,6 +11,12 @@ This is a SwiftUI-based iOS nutrition calculator app that allows users to:
 - Store food data locally using SQLite database
 
 ## App feature request
+2025-7-9
+  -Add Icon
+  $ swip to delet item not smoothly
+  $ add process indicator as request gemini.
+  
+
 2025-7-5:
   -起始就可以輸入{營養目標值}：每日熱量預算，每日目標蛋白質，每日目標脂肪。
   -基本資料
@@ -21,6 +27,34 @@ This is a SwiftUI-based iOS nutrition calculator app that allows users to:
     提供一個設定icon在左上角。點進去即可設定目標值。
     訊息顯示：
       位置：在每日營養總計的BOX設計成可以左右滑動，看到下一組資訊{目標值差距}
+
+  2025-7-6:
+  
+
+
+  Checked-顯示最近七天的數據，向左滑可以看前一天
+  
+  Checked-因此在畫面設計變更：
+    1.[今日]食物清單標題移到 今日營養統計之下。
+    2.向左滑可以看前一日，再向左滑就可以看前天的資料。總共會有七日的資料，包含今日。
+    3.標題要改成日期變數。除了今日。前一天的改成{日期}營養統計{日期}食物清單
+    4. default 主頁顯示今日的數據頁
+
+  Checked-新增食物頁：在食物名稱 輸入時每一字，都能去資料庫 模糊搜尋 顯示找到類似的 食物名稱 清單，可以快速選擇食物帶入營養數值。無需一個一個輸入已經存在資料庫的食物。類似在google box搜尋 幫忙顯示常用關鍵字。
+
+-今日數據向右滑，顯示七天統計圖。再向右滑是30天統計圖。
+
+成本優化：傳一張圖最小要多大。
+  -那個模型最便宜
+  -已經有的食物，就不要問AI。
+
+  -食物快捷 (summary)
+  -先問食物名，搜尋資料庫，找不到才用AI
+
+  - 今日食物清單向右滑，增加一頁，{快速選取食物}將前20名食物建立標籤，每一標籤代表一個食物，標注文字食物前三個字。點一下標籤，將會將該標籤指到食物添加到今日食物。
+
+
+
 
 ## Architecture
 
