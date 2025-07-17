@@ -235,10 +235,7 @@
 				Base,
 				"zh-Hant",
 				"zh-Hant 2",
-				"en 2",
 				"zh-Hant 3",
-				"en 3",
-				"en 4",
 				ja,
 			);
 			mainGroup = B7C2E8C02E18C9B200CB6A1C;
