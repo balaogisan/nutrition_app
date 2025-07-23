@@ -15,6 +15,7 @@ class DatabaseManager {
     let foods = Table("foods")
     let id = Expression<Int64>("id")
     let name = Expression<String>("name")
+    let shortName = Expression<String>("shortName")
     let calories = Expression<Double>("calories")
     let protein = Expression<Double>("protein")
     let fat = Expression<Double>("fat")
@@ -59,6 +60,7 @@ class DatabaseManager {
             try db?.run(foods.create(ifNotExists: true) { t in
                 t.column(id, primaryKey: .autoincrement)
                 t.column(name)
+                t.column(shortName, defaultValue: "") // Add shortName with a default value
                 t.column(calories)
                 t.column(protein)
                 t.column(fat)
@@ -66,6 +68,13 @@ class DatabaseManager {
                 t.column(date)
                 t.column(portions, defaultValue: 1.0)
             })
+            
+            // Add shortName column for existing tables (for backward compatibility)
+            do {
+                try db?.run("ALTER TABLE foods ADD COLUMN shortName TEXT DEFAULT ''")
+            } catch {
+                // Ignore error if column already exists
+            }
             
             // 新增份數欄位 (為舊版本相容性)
             do {
@@ -109,8 +118,10 @@ class DatabaseManager {
     // 範例：新增一筆食物
     func addFood(name: String, calories: Double, protein: Double, fat: Double, carbs: Double, date: Date = Date(), portions: Double = 1.0) {
         do {
+            let shortName = String(name.prefix(3))
             let insert = foods.insert(
                 self.name <- name,
+                self.shortName <- shortName,
                 self.calories <- calories,
                 self.protein <- protein,
                 self.fat <- fat,
@@ -132,6 +143,7 @@ class DatabaseManager {
                 let item = Food(
                     id: food[id],
                     name: food[name],
+                    shortName: food[shortName],
                     calories: food[calories],
                     protein: food[protein],
                     fat: food[fat],
@@ -169,6 +181,7 @@ class DatabaseManager {
                 let item = Food(
                     id: food[id],
                     name: food[name],
+                    shortName: food[shortName],
                     calories: food[calories],
                     protein: food[protein],
                     fat: food[fat],
@@ -311,6 +324,27 @@ class DatabaseManager {
             print("更新食物份數失敗: \(error)")
         }
     }
+
+    // 更新食物名稱
+    func updateFoodName(id: Int64, newName: String) {
+        do {
+            let food = foods.filter(self.id == id)
+            try db?.run(food.update(self.name <- newName))
+            print("更新食物名稱成功: ID \(id), 新名稱: \(newName)")
+        } catch {
+            print("更新食物名稱失敗: \(error)")
+        }
+    }
+
+    func updateFoodShortName(id: Int64, newShortName: String) {
+        do {
+            let food = foods.filter(self.id == id)
+            try db?.run(food.update(self.shortName <- newShortName))
+            print("更新食物簡稱成功: ID \(id), 新簡稱: \(newShortName)")
+        } catch {
+            print("更新食物簡稱失敗: \(error)")
+        }
+    }
     
     // 取得建議營養目標
     func getRecommendedGoals() -> NutritionGoals {
@@ -324,7 +358,7 @@ class DatabaseManager {
         guard !query.isEmpty, let db = db else { return result }
 
         let sql = """
-            SELECT id, name, calories, protein, fat, carbs, date, portions FROM foods
+            SELECT id, name, shortName, calories, protein, fat, carbs, date, portions FROM foods
             WHERE id IN (
                 SELECT MAX(id) FROM foods GROUP BY name
             )
@@ -338,20 +372,22 @@ class DatabaseManager {
                 // 使用安全的 as? 轉型，並提供預設值，避免閃退
                 let foodId = row[0] as? Int64 ?? 0
                 let foodName = row[1] as? String ?? ""
-                let foodCalories = row[2] as? Double ?? 0.0
-                let foodProtein = row[3] as? Double ?? 0.0
-                let foodFat = row[4] as? Double ?? 0.0
-                let foodCarbs = row[5] as? Double ?? 0.0
+                let foodShortName = row[2] as? String ?? ""
+                let foodCalories = row[3] as? Double ?? 0.0
+                let foodProtein = row[4] as? Double ?? 0.0
+                let foodFat = row[5] as? Double ?? 0.0
+                let foodCarbs = row[6] as? Double ?? 0.0
                 
                 // 對日期做更安全的處理
-                let timeInterval = row[6] as? Double ?? Date().timeIntervalSince1970
+                let timeInterval = row[7] as? Double ?? Date().timeIntervalSince1970
                 let foodDate = Date(timeIntervalSince1970: timeInterval)
                 
-                let foodPortions = row[7] as? Double ?? 1.0
+                let foodPortions = row[8] as? Double ?? 1.0
 
                 let item = Food(
                     id: foodId,
                     name: foodName,
+                    shortName: foodShortName,
                     calories: foodCalories,
                     protein: foodProtein,
                     fat: foodFat,
@@ -373,7 +409,7 @@ class DatabaseManager {
         guard let db = db else { return result }
         
         let sql = """
-            SELECT f.id, f.name, f.calories, f.protein, f.fat, f.carbs, f.date, f.portions
+            SELECT f.id, f.name, f.shortName, f.calories, f.protein, f.fat, f.carbs, f.date, f.portions
             FROM foods f
             INNER JOIN (
                 SELECT name, MAX(id) as max_id
@@ -391,17 +427,19 @@ class DatabaseManager {
             for row in statement {
                 let foodId = row[0] as? Int64 ?? 0
                 let foodName = row[1] as? String ?? ""
-                let foodCalories = row[2] as? Double ?? 0.0
-                let foodProtein = row[3] as? Double ?? 0.0
-                let foodFat = row[4] as? Double ?? 0.0
-                let foodCarbs = row[5] as? Double ?? 0.0
-                let timeInterval = row[6] as? Double ?? Date().timeIntervalSince1970
+                let foodShortName = row[2] as? String ?? ""
+                let foodCalories = row[3] as? Double ?? 0.0
+                let foodProtein = row[4] as? Double ?? 0.0
+                let foodFat = row[5] as? Double ?? 0.0
+                let foodCarbs = row[6] as? Double ?? 0.0
+                let timeInterval = row[7] as? Double ?? Date().timeIntervalSince1970
                 let foodDate = Date(timeIntervalSince1970: timeInterval)
-                let foodPortions = row[7] as? Double ?? 1.0
+                let foodPortions = row[8] as? Double ?? 1.0
                 
                 let item = Food(
                     id: foodId,
                     name: foodName,
+                    shortName: foodShortName,
                     calories: foodCalories,
                     protein: foodProtein,
                     fat: foodFat,

@@ -74,3 +74,5 @@
 "fitness_goal_build_muscle" = "增肌";
 "fitness_goal_lose_fat" = "減脂";
 "analyzing_message"="連線查詢中...";
+"edit_food_short_name_alert_title"="編輯簡稱";
+"edit_food_short_name_alert_message"="可輸入8個英文字的長度或四個中文字";

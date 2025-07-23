@@ -2,7 +2,8 @@ import Foundation
 
 struct Food: Identifiable {
     let id: Int64
-    let name: String
+    var name: String
+    var shortName: String
     let calories: Double
     let protein: Double
     let fat: Double
@@ -17,9 +18,10 @@ struct Food: Identifiable {
     var actualCarbs: Double { carbs * portions }
     
     // 初始化時預設1份
-    init(id: Int64, name: String, calories: Double, protein: Double, fat: Double, carbs: Double, date: Date, portions: Double = 1.0) {
+    init(id: Int64, name: String, shortName: String, calories: Double, protein: Double, fat: Double, carbs: Double, date: Date, portions: Double = 1.0) {
         self.id = id
         self.name = name
+        self.shortName = shortName
         self.calories = calories
         self.protein = protein
         self.fat = fat

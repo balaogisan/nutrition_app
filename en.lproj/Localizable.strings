@@ -74,3 +74,5 @@
 "fitness_goal_build_muscle" = "Build Muscle";
 "fitness_goal_lose_fat" = "Lose Fat";
 "analyzing_message"="Online searching ...";
+"edit_food_short_name_alert_title"="Edit short Name";
+"edit_food_short_name_alert_message"="Short name's length is 8 characters";

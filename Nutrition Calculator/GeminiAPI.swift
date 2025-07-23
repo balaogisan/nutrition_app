@@ -109,6 +109,8 @@ class GeminiAPI {
             return
         }
 
+        logRequest(requestBody: requestBody)
+
         print("🚀 Sending request to Gemini API...")
         URLSession.shared.dataTask(with: request) { data, response, error in
             if let error = error {
@@ -150,6 +152,38 @@ class GeminiAPI {
                 print("❌ JSON parsing error: \(error)")
                 print("Raw response: \(String(data: data, encoding: .utf8) ?? "Unable to decode")")
                 completion(.failure(error))
+            }
+        }.resume()
+    }
+
+    private func logRequest(requestBody: [String: Any]) {
+        guard let url = URL(string: "https://gcslog-2824223740.asia-east1.run.app") else {
+            print("❌ Invalid logging URL")
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        do {
+            request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
+        } catch {
+            print("❌ Failed to serialize logging request body: \(error)")
+            return
+        }
+
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("❌ Logging request error: \(error.localizedDescription)")
+                return
+            }
+
+            if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode != 200 {
+                print("❌ Logging request failed with status code: \(httpResponse.statusCode)")
+                if let data = data, let responseBody = String(data: data, encoding: .utf8) {
+                    print("📝 Logging response body: \(responseBody)")
+                }
             }
         }.resume()
     }

@@ -74,11 +74,15 @@ struct FoodAddView: View {
                             .frame(height: 150)
                     }
                     
-                    if isAnalyzing {
-                        ProgressView(String(localized: "analyzing_message"))
-                    } else if let imageData {
-                        Button(String(localized: "analyze_photo_with_gemini_button")) {
+                    if let imageData {
+                        Button(action: {
                             analyzeWithGemini(imageData: imageData)
+                        }) {
+                            if isAnalyzing {
+                                ProgressView(String(localized: "analyzing_message"))
+                            } else {
+                                Text(String(localized: "analyze_photo_with_gemini_button"))
+                            }
                         }
                         .disabled(isAnalyzing)
                     }
