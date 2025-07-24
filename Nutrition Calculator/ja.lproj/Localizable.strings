@@ -76,3 +76,7 @@
 "analyzing_message"="Online searching ..."
 "edit_food_short_name_alert_title"="Edit short Name";
 "edit_food_short_name_alert_message"="Short name's length is 8 characters";
+"analysis_portions_label" = "Amount";
+"portions_unit_label" = "servings";
+"portions_placeholder" = "Enter servings";
+"new_food_short_name_placeholder" = "Input short name here";

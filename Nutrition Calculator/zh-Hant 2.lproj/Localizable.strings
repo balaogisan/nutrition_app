@@ -76,3 +76,7 @@
 "analyzing_message"="連線查詢中...";
 "edit_food_short_name_alert_title"="編輯簡稱";
 "edit_food_short_name_alert_message"="可輸入8個英文字的長度或四個中文字";
+"analysis_portions_label" = "總共";
+"portions_unit_label" = "人份";
+"portions_placeholder" = "輸入份數";
+"new_food_short_name_placeholder" = "填入食物簡稱";

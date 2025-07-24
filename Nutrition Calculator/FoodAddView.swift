@@ -15,6 +15,7 @@ struct FoodAddView: View {
     @State private var protein = ""
     @State private var fat = ""
     @State private var carbs = ""
+    @State private var portions = "1"
     
     @State private var selectedPhoto: PhotosPickerItem? = nil
     @State private var imageData: Data? = nil
@@ -23,6 +24,7 @@ struct FoodAddView: View {
     @State private var isSearching = false
 
     @State private var isAnalyzing = false
+    @State private var analysisPortions = "1" // For AI analysis
 
     var onSave: (() -> Void)? // 回傳用 closure
 
@@ -55,6 +57,11 @@ struct FoodAddView: View {
                         .keyboardType(.decimalPad)
                     TextField(String(localized: "carbs_placeholder"), text: $carbs)
                         .keyboardType(.decimalPad)
+                    HStack {
+                        TextField(String(localized: "portions_placeholder"), text: $portions)
+                            .keyboardType(.decimalPad)
+                        Text(String(localized: "portions_unit_label"))
+                    }
                 }
                 
                 Section(header: Text(String(localized: "recognize_food_from_album_section_header"))) {
@@ -72,6 +79,19 @@ struct FoodAddView: View {
                             .resizable()
                             .scaledToFit()
                             .frame(height: 150)
+                    }
+
+                    if imageData != nil {
+                        HStack {
+                            Text(String(localized: "analysis_portions_label"))
+                            Spacer()
+                            TextField("", text: $analysisPortions)
+                                .keyboardType(.decimalPad)
+                                .frame(width: 50)
+                                .multilineTextAlignment(.center)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                            Text(String(localized: "portions_unit_label"))
+                        }
                     }
                     
                     if let imageData {
@@ -136,18 +156,29 @@ struct FoodAddView: View {
     }
 
     private func saveFood() {
-        guard let cal = Double(calories),
-              let pro = Double(protein),
-              let fa = Double(fat),
-              let car = Double(carbs) else {
+        guard var cal = Double(calories),
+              var pro = Double(protein),
+              var fa = Double(fat),
+              var car = Double(carbs),
+              let por = Double(portions) else {
             return
         }
+        
+        // 如果份數大於1，將營養素除以份數，以一人份儲存
+        if por > 1.0 {
+            cal /= por
+            pro /= por
+            fa /= por
+            car /= por
+        }
+
         DatabaseManager.shared.addFood(
             name: name,
             calories: cal,
             protein: pro,
             fat: fa,
-            carbs: car
+            carbs: car,
+            portions: 1.0 // 永遠以一人份儲存到資料庫
         )
         onSave?() // 通知主畫面刷新
         dismiss()
@@ -157,6 +188,8 @@ struct FoodAddView: View {
         isAnalyzing = true
         print("🍽️ FoodAddView: Starting Gemini analysis")
         
+        let portionsToAnalyze = Double(analysisPortions) ?? 1.0
+
         GeminiAPI.shared.analyzeFood(imageData: imageData) { result in
             switch result {
             case .success(let responseText):
@@ -189,12 +222,19 @@ struct FoodAddView: View {
                         let oldCarbs = self.carbs
                         
                         self.name = (dict["name"] as? String) ?? ""
-                        self.calories = (dict["calories"] as? NSNumber)?.stringValue ?? "0"
-                        self.protein = (dict["protein"] as? NSNumber)?.stringValue ?? "0"
-                        self.fat = (dict["fat"] as? NSNumber)?.stringValue ?? "0"
-                        self.carbs = (dict["carbs"] as? NSNumber)?.stringValue ?? "0"
                         
-                        print("🔄 FoodAddView: Updated fields:")
+                        let caloriesValue = (dict["calories"] as? NSNumber)?.doubleValue ?? 0
+                        let proteinValue = (dict["protein"] as? NSNumber)?.doubleValue ?? 0
+                        let fatValue = (dict["fat"] as? NSNumber)?.doubleValue ?? 0
+                        let carbsValue = (dict["carbs"] as? NSNumber)?.doubleValue ?? 0
+
+                        self.calories = String(format: "%.1f", caloriesValue / portionsToAnalyze)
+                        self.protein = String(format: "%.1f", proteinValue / portionsToAnalyze)
+                        self.fat = String(format: "%.1f", fatValue / portionsToAnalyze)
+                        self.carbs = String(format: "%.1f", carbsValue / portionsToAnalyze)
+                        self.portions = String(format: "%.1f", portionsToAnalyze) // Update portions field with analysis portions
+                        
+                        print("🔄 FoodAddView: Updated fields (per one portion):")
                         print("   Name: '\(oldName)' → '\(self.name)'")
                         print("   Calories: '\(oldCalories)' → '\(self.calories)'")
                         print("   Protein: '\(oldProtein)' → '\(self.protein)'")
