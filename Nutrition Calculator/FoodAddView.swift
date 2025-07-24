@@ -49,14 +49,26 @@ struct FoodAddView: View {
                         }
                     }
                     
-                    TextField(String(localized: "calories_placeholder"), text: $calories)
-                        .keyboardType(.decimalPad)
-                    TextField(String(localized: "protein_placeholder"), text: $protein)
-                        .keyboardType(.decimalPad)
-                    TextField(String(localized: "fat_placeholder"), text: $fat)
-                        .keyboardType(.decimalPad)
-                    TextField(String(localized: "carbs_placeholder"), text: $carbs)
-                        .keyboardType(.decimalPad)
+                    HStack {
+                        TextField(String(localized: "calories_placeholder"), text: $calories)
+                            .keyboardType(.decimalPad)
+                        Text(String(localized: "calories_title"))
+                    }
+                    HStack {
+                        TextField(String(localized: "protein_placeholder"), text: $protein)
+                            .keyboardType(.decimalPad)
+                        Text(String(localized: "protein_title"))
+                    }
+                    HStack {
+                        TextField(String(localized: "fat_placeholder"), text: $fat)
+                            .keyboardType(.decimalPad)
+                        Text(String(localized: "fat_title"))
+                    }
+                    HStack {
+                        TextField(String(localized: "carbs_placeholder"), text: $carbs)
+                            .keyboardType(.decimalPad)
+                        Text(String(localized: "carbs_title"))
+                    }
                     HStack {
                         TextField(String(localized: "portions_placeholder"), text: $portions)
                             .keyboardType(.decimalPad)
