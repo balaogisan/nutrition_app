@@ -26,6 +26,7 @@ struct FoodAddView: View {
     @State private var isAnalyzing = false
     @State private var analysisPortions = "1" // For AI analysis
 
+    var date: Date // The date to add the food to
     var onSave: (() -> Void)? // 回傳用 closure
 
     var body: some View {
@@ -190,6 +191,7 @@ struct FoodAddView: View {
             protein: pro,
             fat: fa,
             carbs: car,
+            date: date, // Use the provided date
             portions: 1.0 // 永遠以一人份儲存到資料庫
         )
         onSave?() // 通知主畫面刷新
@@ -273,4 +275,3 @@ struct FoodAddView: View {
     }
 
 }
-

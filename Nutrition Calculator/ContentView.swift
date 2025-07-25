@@ -62,13 +62,18 @@ struct ContentView: View {
             }
             .onAppear(perform: refreshData)
             .sheet(isPresented: $showAdd) {
-                FoodAddView(onSave: refreshData)
+                if !dailyData.isEmpty {
+                    FoodAddView(date: dailyData[currentPageIndex].date, onSave: {
+                        refreshData(forDayIndex: currentPageIndex)
+                    })
+                }
             }
             .sheet(isPresented: $showSettings) {
                 SettingsView()
             }
             .fullScreenCover(isPresented: $showQuickSelect) {
-                if let index = dailyData.firstIndex(where: { Calendar.current.isDateInToday($0.date) }) {
+                if !dailyData.isEmpty {
+                    let selectedDate = dailyData[currentPageIndex].date
                     QuickSelectFoodView(onDone: { selectedFoods in
                         for food in selectedFoods {
                             DatabaseManager.shared.addFood(
@@ -76,10 +81,11 @@ struct ContentView: View {
                                 calories: food.calories,
                                 protein: food.protein,
                                 fat: food.fat,
-                                carbs: food.carbs
+                                carbs: food.carbs,
+                                date: selectedDate
                             )
                         }
-                        refreshData(forDayIndex: index)
+                        refreshData(forDayIndex: currentPageIndex)
                         showQuickSelect = false // Dismiss the sheet
                     })
                 }
@@ -89,7 +95,7 @@ struct ContentView: View {
     
     // 根據當前頁面動態生成導覽列標題
     private var navigationTitle: String {
-        guard !dailyData.isEmpty else { return String(localized: "loading_message") }
+        guard !dailyData.isEmpty, dailyData.indices.contains(currentPageIndex) else { return String(localized: "loading_message") }
         let date = dailyData[currentPageIndex].date
         if Calendar.current.isDateInToday(date) {
             return String(localized: "today_title")
@@ -112,27 +118,16 @@ struct ContentView: View {
             // 食物列表標題
             listHeader(for: data.date)
             
-            // 根據是否為今日，顯示不同的食物列表或快速選取頁面
-            if Calendar.current.isDateInToday(data.date) {
-                // 今日食物清單頁
-                List {
-                    ForEach(data.foods) { food in
-                        foodRow(food: food)
-                    }
-                    .onDelete { offsets in
-                        deleteFood(at: offsets, forDayIndex: index)
-                    }
+            // 食物列表
+            List {
+                ForEach(data.foods) { food in
+                    foodRow(food: food, forDayIndex: index)
                 }
-                .listStyle(PlainListStyle())
-            } else {
-                // 歷史食物清單頁
-                List {
-                    ForEach(data.foods) { food in
-                        foodRow(food: food)
-                    }
+                .onDelete { offsets in
+                    deleteFood(at: offsets, forDayIndex: index)
                 }
-                .listStyle(PlainListStyle())
             }
+            .listStyle(PlainListStyle())
         }
     }
     
@@ -145,21 +140,17 @@ struct ContentView: View {
                 .padding(.horizontal)
             Spacer()
             
-            // 只有今日才顯示快速選取按鈕
-            if Calendar.current.isDateInToday(date) {
-                Button(action: {
-                    // 切換到快速選取食物頁面
-                    showQuickSelect = true
-                }) {
-                    Text(String(localized: "quick_select_button"))
-                        .font(.subheadline)
-                        .foregroundColor(.blue)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 5)
-                        .background(Capsule().fill(Color.blue.opacity(0.1)))
-                }
-                .padding(.trailing)
+            Button(action: {
+                showQuickSelect = true
+            }) {
+                Text(String(localized: "quick_select_button"))
+                    .font(.subheadline)
+                    .foregroundColor(.blue)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .background(Capsule().fill(Color.blue.opacity(0.1)))
             }
+            .padding(.trailing)
         }
         .padding(.top, 10)
     }
@@ -207,30 +198,27 @@ struct ContentView: View {
         }
     }
 
-    private func foodRow(food: Food) -> some View {
+    private func foodRow(food: Food, forDayIndex index: Int) -> some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
                 HStack {
                     Text(food.name).font(.headline)
                     Spacer()
-                    // 只有今天的食物可以調整份量
-                    if Calendar.current.isDateInToday(food.date) {
-                        HStack(spacing: 8) {
-                            Button(action: { adjustPortions(for: food, change: -1.0) }) {
-                                Image(systemName: "minus.circle").foregroundColor(.red).font(.title3)
-                            }
-                            .buttonStyle(BorderlessButtonStyle())
-                            
-                            Text(String(format: NSLocalizedString("portions_unit", comment: ""), food.portions))
-                                .font(.subheadline).foregroundColor(.blue)
-                                .padding(.horizontal, 8).padding(.vertical, 2)
-                                .background(Color.blue.opacity(0.1)).cornerRadius(8)
-                            
-                            Button(action: { adjustPortions(for: food, change: 1.0) }) {
-                                Image(systemName: "plus.circle").foregroundColor(.green).font(.title3)
-                            }
-                            .buttonStyle(BorderlessButtonStyle())
+                    HStack(spacing: 8) {
+                        Button(action: { adjustPortions(for: food, change: -1.0, forDayIndex: index) }) {
+                            Image(systemName: "minus.circle").foregroundColor(.red).font(.title3)
                         }
+                        .buttonStyle(BorderlessButtonStyle())
+                        
+                        Text(String(format: NSLocalizedString("portions_unit", comment: ""), food.portions))
+                            .font(.subheadline).foregroundColor(.blue)
+                            .padding(.horizontal, 8).padding(.vertical, 2)
+                            .background(Color.blue.opacity(0.1)).cornerRadius(8)
+                        
+                        Button(action: { adjustPortions(for: food, change: 1.0, forDayIndex: index) }) {
+                            Image(systemName: "plus.circle").foregroundColor(.green).font(.title3)
+                        }
+                        .buttonStyle(BorderlessButtonStyle())
                     }
                 }
                 Text(String(format: NSLocalizedString("calories_protein_info", comment: ""), food.actualCalories, food.actualProtein))
@@ -270,8 +258,8 @@ struct ContentView: View {
         
         self.dailyData = newDailyData
         // 確保刷新後頁面停留在今日
-        if currentPageIndex != 6 {
-            currentPageIndex = 6
+        if currentPageIndex >= newDailyData.count {
+            currentPageIndex = newDailyData.count - 1
         }
     }
     
@@ -289,12 +277,11 @@ struct ContentView: View {
         dailyData[index].goalProgress = goalProgress
     }
 
-    // 調整份量 (只對今日有效)
-    func adjustPortions(for food: Food, change: Double) {
+    // 調整份量
+    func adjustPortions(for food: Food, change: Double, forDayIndex index: Int) {
         let newPortions = max(1.0, food.portions + change)
         DatabaseManager.shared.updateFoodPortions(id: food.id, portions: newPortions)
         
-        // 只刷新今日的數據
-        refreshData(forDayIndex: 6)
+        refreshData(forDayIndex: index)
     }
 }

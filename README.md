@@ -65,5 +65,23 @@
 4.  **編譯與執行**：
     選擇您的模擬器或實體裝置，點擊 "Run" 按鈕。
 
+## Build comments
+```bash
+ad91ce7eab9e19c6bab06887d54c3f5867471c44 add nutrient names in Add new Food view
+126fc7eaf54abf0184e3b86ef2b6fbcbb1cddd94 add portion services field.
+977767452262cb0b356f5d7a0826a1377a5df5e3 UiUpdate:short name
+4fb2a5f49a6f95958fc0f0c19720d06c029294d7 project configuration update
+f45fce0593c74a78238efc620b043c3e0264603d multilang update
+9fdb81544f40a1f4008a8d65d6b63dd0b0fec6f6 add default value for db update
+ae8540dd032f62d8342c995a9b0b5e55292f79d2 claude.md updated
+b6987a46645df6d7311db79ef0f533dcd913ff52 multi-language version
+11cc07c30e6b8a1a6e81ebc8446c4715141292a1 Ignore Package.resolved
+db5c1d0c87b79bdc729ced6ef0126d3ad15eed9b number decimal format
+fa3267098b3fc92099452825f7139fa95e2135cd adjust gesture
+6ceaf13b134b34569335b6f9d644eb833e242a26 add icon
+a4afa074d09cc5c7b445ab17acb29079e10db355 layout tuning
+5c58f5c49f1178ae87ca500a05ae94316385c9b4 mobile device test
+```
+
 ---
 由 SHAOYUN HSU 於 2025 年製作。
