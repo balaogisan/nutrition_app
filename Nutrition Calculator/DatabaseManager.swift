@@ -22,6 +22,8 @@ class DatabaseManager {
     let carbs = Expression<Double>("carbs")
     let date = Expression<Date>("date")
     let portions = Expression<Double>("portions")
+    let weighs = Expression<Double?>("weighs")
+    let results = Expression<String?>("results")
     
     // 營養目標資料表
     let goals = Table("nutrition_goals")
@@ -67,6 +69,8 @@ class DatabaseManager {
                 t.column(carbs)
                 t.column(date)
                 t.column(portions, defaultValue: 1.0)
+                t.column(weighs)
+                t.column(results)
             })
             
             // Add shortName column for existing tables (for backward compatibility)
@@ -79,6 +83,19 @@ class DatabaseManager {
             // 新增份數欄位 (為舊版本相容性)
             do {
                 try db?.run("ALTER TABLE foods ADD COLUMN portions REAL DEFAULT 1.0")
+            } catch {
+                // 如果欄位已存在，忽略錯誤
+            }
+            
+            // 新增 weighs 和 results 欄位 (為舊版本相容性)
+            do {
+                try db?.run("ALTER TABLE foods ADD COLUMN weighs REAL")
+            } catch {
+                // 如果欄位已存在，忽略錯誤
+            }
+            
+            do {
+                try db?.run("ALTER TABLE foods ADD COLUMN results TEXT")
             } catch {
                 // 如果欄位已存在，忽略錯誤
             }
@@ -116,9 +133,17 @@ class DatabaseManager {
     }
 
     // 範例：新增一筆食物
-    func addFood(name: String, calories: Double, protein: Double, fat: Double, carbs: Double, date: Date = Date(), portions: Double = 1.0) {
+    func addFood(name: String, calories: Double, protein: Double, fat: Double, carbs: Double, date: Date = Date(), portions: Double = 1.0, weighs: Double? = nil, results: [FoodSearchResult]? = nil) {
         do {
             let shortName = String(name.prefix(3))
+            var resultsString: String? = nil
+            if let results = results {
+                let encoder = JSONEncoder()
+                if let data = try? encoder.encode(results) {
+                    resultsString = String(data: data, encoding: .utf8)
+                }
+            }
+            
             let insert = foods.insert(
                 self.name <- name,
                 self.shortName <- shortName,
@@ -127,7 +152,9 @@ class DatabaseManager {
                 self.fat <- fat,
                 self.carbs <- carbs,
                 self.date <- date,
-                self.portions <- portions
+                self.portions <- portions,
+                self.weighs <- weighs,
+                self.results <- resultsString
             )
             try db?.run(insert)
         } catch {
@@ -140,6 +167,14 @@ class DatabaseManager {
         var result: [Food] = []
         do {
             for food in try db!.prepare(foods) {
+                var foodResults: [FoodSearchResult]? = nil
+                if let resultsString = food[results] {
+                    let decoder = JSONDecoder()
+                    if let data = resultsString.data(using: .utf8) {
+                        foodResults = try? decoder.decode([FoodSearchResult].self, from: data)
+                    }
+                }
+                
                 let item = Food(
                     id: food[id],
                     name: food[name],
@@ -149,7 +184,9 @@ class DatabaseManager {
                     fat: food[fat],
                     carbs: food[carbs],
                     date: food[date],
-                    portions: food[portions]
+                    portions: food[portions],
+                    weighs: food[weighs],
+                    results: foodResults
                 )
                 result.append(item)
             }
@@ -178,6 +215,14 @@ class DatabaseManager {
         do {
             let query = foods.filter(self.date >= startOfDay && self.date < endOfDay)
             for food in try db!.prepare(query) {
+                var foodResults: [FoodSearchResult]? = nil
+                if let resultsString = food[results] {
+                    let decoder = JSONDecoder()
+                    if let data = resultsString.data(using: .utf8) {
+                        foodResults = try? decoder.decode([FoodSearchResult].self, from: data)
+                    }
+                }
+                
                 let item = Food(
                     id: food[id],
                     name: food[name],
@@ -187,7 +232,9 @@ class DatabaseManager {
                     fat: food[fat],
                     carbs: food[carbs],
                     date: food[self.date],
-                    portions: food[portions]
+                    portions: food[portions],
+                    weighs: food[weighs],
+                    results: foodResults
                 )
                 result.append(item)
             }
@@ -374,7 +421,7 @@ class DatabaseManager {
         guard !query.isEmpty, let db = db else { return result }
 
         let sql = """
-            SELECT id, name, shortName, calories, protein, fat, carbs, date, portions FROM foods
+            SELECT id, name, shortName, calories, protein, fat, carbs, date, portions, weighs, results FROM foods
             WHERE id IN (
                 SELECT MAX(id) FROM foods GROUP BY name
             )
@@ -399,6 +446,16 @@ class DatabaseManager {
                 let foodDate = Date(timeIntervalSince1970: timeInterval)
                 
                 let foodPortions = row[8] as? Double ?? 1.0
+                let foodWeighs = row[9] as? Double
+                let resultsString = row[10] as? String
+                
+                var foodResults: [FoodSearchResult]? = nil
+                if let resultsString = resultsString {
+                    let decoder = JSONDecoder()
+                    if let data = resultsString.data(using: .utf8) {
+                        foodResults = try? decoder.decode([FoodSearchResult].self, from: data)
+                    }
+                }
 
                 let item = Food(
                     id: foodId,
@@ -409,7 +466,9 @@ class DatabaseManager {
                     fat: foodFat,
                     carbs: foodCarbs,
                     date: foodDate,
-                    portions: foodPortions
+                    portions: foodPortions,
+                    weighs: foodWeighs,
+                    results: foodResults
                 )
                 result.append(item)
             }
@@ -425,7 +484,7 @@ class DatabaseManager {
         guard let db = db else { return result }
         
         let sql = """
-            SELECT f.id, f.name, f.shortName, f.calories, f.protein, f.fat, f.carbs, f.date, f.portions
+            SELECT f.id, f.name, f.shortName, f.calories, f.protein, f.fat, f.carbs, f.date, f.portions, f.weighs, f.results
             FROM foods f
             INNER JOIN (
                 SELECT name, MAX(id) as max_id
@@ -451,6 +510,16 @@ class DatabaseManager {
                 let timeInterval = row[7] as? Double ?? Date().timeIntervalSince1970
                 let foodDate = Date(timeIntervalSince1970: timeInterval)
                 let foodPortions = row[8] as? Double ?? 1.0
+                let foodWeighs = row[9] as? Double
+                let resultsString = row[10] as? String
+                
+                var foodResults: [FoodSearchResult]? = nil
+                if let resultsString = resultsString {
+                    let decoder = JSONDecoder()
+                    if let data = resultsString.data(using: .utf8) {
+                        foodResults = try? decoder.decode([FoodSearchResult].self, from: data)
+                    }
+                }
                 
                 let item = Food(
                     id: foodId,
@@ -461,7 +530,9 @@ class DatabaseManager {
                     fat: foodFat,
                     carbs: foodCarbs,
                     date: foodDate,
-                    portions: foodPortions
+                    portions: foodPortions,
+                    weighs: foodWeighs,
+                    results: foodResults
                 )
                 result.append(item)
             }

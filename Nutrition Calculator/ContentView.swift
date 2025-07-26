@@ -139,6 +139,7 @@ struct ContentView: View {
                 ForEach(data.foods) { food in
                     foodRow(food: food, forDayIndex: index)
                         .onTapGesture(count: 2) {
+                            print("Editing food: \(food.name), Results: \(food.results ?? [])")
                             editingFood = food
                         }
                 }

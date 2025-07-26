@@ -16,6 +16,8 @@ struct FoodAddView: View {
     @State private var fat = ""
     @State private var carbs = ""
     @State private var portions = "1"
+    @State private var weighs: String = ""
+    @State private var results: [FoodSearchResult] = []
     
     @State private var selectedPhoto: PhotosPickerItem? = nil
     @State private var imageData: Data? = nil
@@ -189,6 +191,14 @@ struct FoodAddView: View {
         fat = String(format: "%.1f", food.fat)
         carbs = String(format: "%.1f", food.carbs)
         
+        if let weighsValue = food.weighs {
+            weighs = String(format: "%.1f", weighsValue)
+        }
+        
+        if let resultsValue = food.results {
+            results = resultsValue
+        }
+        
         isNameSelected = true
         isSearching = false
         searchResults = []
@@ -217,7 +227,9 @@ struct FoodAddView: View {
             fat: fa,
             carbs: car,
             date: date, // Use the provided date
-            portions: 1.0 // 永遠以一人份儲存到資料庫
+            portions: 1.0, // 永遠以一人份儲存到資料庫
+            weighs: Double(weighs),
+            results: results
         )
         onSave?() // 通知主畫面刷新
         dismiss()
@@ -247,6 +259,20 @@ struct FoodAddView: View {
                     print("✅ FoodAddView: Successfully parsed JSON from online search")
                     
                     DispatchQueue.main.async {
+                        var foodResults: [FoodSearchResult]? = nil
+                        if let resultsArray = dict["results"] as? [[String: Any]] {
+                            foodResults = resultsArray.compactMap { resultDict in
+                                guard let source = resultDict["source"] as? String,
+                                      let calories = (resultDict["calories"] as? NSNumber)?.doubleValue,
+                                      let protein = (resultDict["protein"] as? NSNumber)?.doubleValue,
+                                      let fat = (resultDict["fat"] as? NSNumber)?.doubleValue,
+                                      let carbs = (resultDict["carbs"] as? NSNumber)?.doubleValue else {
+                                    return nil
+                                }
+                                return FoodSearchResult(source: source, calories: calories, protein: protein, fat: fat, carbs: carbs)
+                            }
+                        }
+                        
                         let food = Food(
                             id: 0, // Temporary ID
                             name: (dict["name"] as? String) ?? foodName,
@@ -256,9 +282,12 @@ struct FoodAddView: View {
                             fat: (dict["fat"] as? NSNumber)?.doubleValue ?? 0,
                             carbs: (dict["carbs"] as? NSNumber)?.doubleValue ?? 0,
                             date: Date(),
-                            portions: 1.0
+                            portions: 1.0,
+                            weighs: (dict["weighs"] as? NSNumber)?.doubleValue,
+                            results: foodResults
                         )
-                        self.searchResults = [food]
+                        // Automatically select the food to populate the fields
+                        self.selectFood(food)
                     }
                 } else {
                     print("⚠️ FoodAddView: Response from online search is not JSON format")
@@ -321,12 +350,31 @@ struct FoodAddView: View {
                         self.carbs = String(format: "%.1f", carbsValue / portionsToAnalyze)
                         self.portions = String(format: "%.1f", portionsToAnalyze) // Update portions field with analysis portions
                         
+                        if let weighsValue = (dict["weighs"] as? NSNumber)?.doubleValue {
+                            self.weighs = String(format: "%.1f", weighsValue)
+                        }
+                        
+                        if let resultsArray = dict["results"] as? [[String: Any]] {
+                            self.results = resultsArray.compactMap { resultDict in
+                                guard let source = resultDict["source"] as? String,
+                                      let calories = (resultDict["calories"] as? NSNumber)?.doubleValue,
+                                      let protein = (resultDict["protein"] as? NSNumber)?.doubleValue,
+                                      let fat = (resultDict["fat"] as? NSNumber)?.doubleValue,
+                                      let carbs = (resultDict["carbs"] as? NSNumber)?.doubleValue else {
+                                    return nil
+                                }
+                                return FoodSearchResult(source: source, calories: calories, protein: protein, fat: fat, carbs: carbs)
+                            }
+                        }
+
                         print("🔄 FoodAddView: Updated fields (per one portion):")
                         print("   Name: '\(oldName)' → '\(self.name)'")
                         print("   Calories: '\(oldCalories)' → '\(self.calories)'")
                         print("   Protein: '\(oldProtein)' → '\(self.protein)'")
                         print("   Fat: '\(oldFat)' → '\(self.fat)'")
                         print("   Carbs: '\(oldCarbs)' → '\(self.carbs)'''")
+                        print("   Weighs: '\(self.weighs)'")
+                        print("   Results: '\(self.results)'")
                     }
                 } else {
                     print("⚠️ FoodAddView: Response is not JSON format")

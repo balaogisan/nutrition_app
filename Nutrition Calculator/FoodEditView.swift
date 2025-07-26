@@ -37,6 +37,20 @@ struct FoodEditView: View {
                     }
                 }
                 
+                if let results = food.results, !results.isEmpty {
+                    Section {
+                        ForEach(results) { result in
+                            VStack(alignment: .leading) {
+                                Text(result.source)
+                                    .font(.headline)
+                                Text("熱量: \(result.calories, specifier: "%.1f") 大卡, 蛋白質: \(result.protein, specifier: "%.1f") 克, 脂肪: \(result.fat, specifier: "%.1f") 克, 碳水: \(result.carbs, specifier: "%.1f") 克")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                    }
+                }
+                
                 Section {
                     Button(role: .destructive) {
                         showingDeleteConfirm = true

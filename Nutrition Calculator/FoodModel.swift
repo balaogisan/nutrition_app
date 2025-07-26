@@ -1,6 +1,15 @@
 import Foundation
 
-struct Food: Identifiable {
+struct FoodSearchResult: Codable, Identifiable {
+    var id: String { source }
+    let source: String
+    let calories: Double
+    let protein: Double
+    let fat: Double
+    let carbs: Double
+}
+
+struct Food: Codable, Identifiable {
     let id: Int64
     var name: String
     var shortName: String
@@ -10,6 +19,8 @@ struct Food: Identifiable {
     var carbs: Double
     let date: Date
     var portions: Double
+    var weighs: Double?
+    var results: [FoodSearchResult]?
     
     // 根據份數計算實際營養值
     var actualCalories: Double { calories * portions }
@@ -18,7 +29,7 @@ struct Food: Identifiable {
     var actualCarbs: Double { carbs * portions }
     
     // 初始化時預設1份
-    init(id: Int64, name: String, shortName: String, calories: Double, protein: Double, fat: Double, carbs: Double, date: Date, portions: Double = 1.0) {
+    init(id: Int64, name: String, shortName: String, calories: Double, protein: Double, fat: Double, carbs: Double, date: Date, portions: Double = 1.0, weighs: Double? = nil, results: [FoodSearchResult]? = nil) {
         self.id = id
         self.name = name
         self.shortName = shortName
@@ -28,6 +39,8 @@ struct Food: Identifiable {
         self.carbs = carbs
         self.date = date
         self.portions = portions
+        self.weighs = weighs
+        self.results = results
     }
 }
 

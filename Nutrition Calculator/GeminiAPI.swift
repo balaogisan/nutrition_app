@@ -68,7 +68,7 @@ class GeminiAPI {
     }
     
     private func analyzeWithImageData(_ imageData: Data, completion: @escaping (Result<String, Error>) -> Void) {
-        guard let url = URL(string: "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent") else {
+        guard let url = URL(string: "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent") else {
             completion(.failure(NSError(domain: "Invalid URL", code: 0, userInfo: nil)))
             return
         }
@@ -80,7 +80,7 @@ class GeminiAPI {
         request.setValue("hsu.Nutrition-Calculator", forHTTPHeaderField: "X-Ios-Bundle-Identifier")
 
         let base64Image = imageData.base64EncodedString()
-        let prompt = "這是一張食物照片，請直接用 JSON 回答如下格式：{\"name\":..., \"calories\":..., \"protein\":..., \"fat\":..., \"carbs\":...}"
+        let prompt = "這是一張食物照片，請直接用 JSON 回答如下格式：{\"name\":..., \"calories\":..., \"protein\":..., \"fat\":..., \"carbs\":..., \"weighs\":..., \"results\":[{\"source\": \"...\", \"calories\": ..., \"protein\": ..., \"fat\": ..., \"carbs\": ...}]}"
         let requestBody: [String: Any] = [
             "contents": [
                 [
@@ -159,7 +159,7 @@ class GeminiAPI {
     func searchFoodNutrition(foodName: String, completion: @escaping (Result<String, Error>) -> Void) {
         print("🔍 Gemini API: Starting food nutrition search for '\(foodName)'")
         
-        guard let url = URL(string: "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent") else {
+        guard let url = URL(string: "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent") else {
             completion(.failure(NSError(domain: "Invalid URL", code: 0, userInfo: nil)))
             return
         }
@@ -170,7 +170,7 @@ class GeminiAPI {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("hsu.Nutrition-Calculator", forHTTPHeaderField: "X-Ios-Bundle-Identifier")
 
-        let prompt = "請搜尋一項食物：\(foodName)，並直接用 JSON 回答如下格式：{\"name\":..., \"calories\":..., \"protein\":..., \"fat\":..., \"carbs\":...}。請以這個食物的慣用單位位計算。例如：茶葉蛋是1個，白飯是1碗，蛋糕是1片來估計"
+        let prompt = "請搜尋一項食物：\(foodName)，請直接用 JSON 回答如下格式：{\"name\":..., \"calories\":..., \"protein\":..., \"fat\":..., \"carbs\":..., \"weighs\":..., \"results\":[{\"source\": \"...\", \"calories\": ..., \"protein\": ..., \"fat\": ..., \"carbs\": ...}]}"
         let requestBody: [String: Any] = [
             "contents": [
                 [
