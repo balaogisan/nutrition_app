@@ -4,10 +4,10 @@ struct Food: Identifiable {
     let id: Int64
     var name: String
     var shortName: String
-    let calories: Double
-    let protein: Double
-    let fat: Double
-    let carbs: Double
+    var calories: Double
+    var protein: Double
+    var fat: Double
+    var carbs: Double
     let date: Date
     var portions: Double
     

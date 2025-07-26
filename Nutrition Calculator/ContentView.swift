@@ -23,6 +23,7 @@ struct ContentView: View {
     @State private var showAdd = false
     @State private var showSettings = false
     @State private var showQuickSelect = false
+    @State private var editingFood: Food? = nil // For editing a food item
 
     private var dateFormatter: DateFormatter {
         let formatter = DateFormatter()
@@ -70,6 +71,21 @@ struct ContentView: View {
             }
             .sheet(isPresented: $showSettings) {
                 SettingsView()
+            }
+            .sheet(item: $editingFood) { food in
+                FoodEditView(
+                    food: food,
+                    onSave: { updatedFood in
+                        DatabaseManager.shared.updateFood(updatedFood)
+                        refreshData(forDayIndex: currentPageIndex)
+                        editingFood = nil
+                    },
+                    onDelete: { foodId in
+                        DatabaseManager.shared.deleteFood(id: foodId)
+                        refreshData(forDayIndex: currentPageIndex)
+                        editingFood = nil
+                    }
+                )
             }
             .fullScreenCover(isPresented: $showQuickSelect) {
                 if !dailyData.isEmpty {
@@ -122,6 +138,9 @@ struct ContentView: View {
             List {
                 ForEach(data.foods) { food in
                     foodRow(food: food, forDayIndex: index)
+                        .onTapGesture(count: 2) {
+                            editingFood = food
+                        }
                 }
                 .onDelete { offsets in
                     deleteFood(at: offsets, forDayIndex: index)

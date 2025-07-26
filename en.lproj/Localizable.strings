@@ -80,3 +80,8 @@
 "portions_unit_label" = "servings";
 "portions_placeholder" = "Enter servings";
 "new_food_short_name_placeholder" = "Input short name here";
+"delete_food_button_title"='Delete the food';
+"edit_food_navigation_title"='Edit the Food Entrice';
+"delete_food_confirm_title"="Delete the food Entrice";
+"delete_food_confirm_message"="Do you confirm the deletion?";
+"delete_button"="Deletion";

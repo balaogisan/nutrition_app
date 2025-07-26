@@ -346,6 +346,22 @@ class DatabaseManager {
         }
     }
     
+    func updateFood(_ food: Food) {
+        do {
+            let foodToUpdate = foods.filter(self.id == food.id)
+            try db?.run(foodToUpdate.update(
+                self.name <- food.name,
+                self.calories <- food.calories,
+                self.protein <- food.protein,
+                self.fat <- food.fat,
+                self.carbs <- food.carbs
+            ))
+            print("更新食物成功: ID \(food.id)")
+        } catch {
+            print("更新食物失敗: \(error)")
+        }
+    }
+    
     // 取得建議營養目標
     func getRecommendedGoals() -> NutritionGoals {
         let profile = getUserProfile()
