@@ -91,7 +91,7 @@ struct QuickSelectFoodView: View {
     }
 
     private func refreshTopFoods() {
-        topFrequentFoods = DatabaseManager.shared.getTopFrequentFoods(limit: 20)
+        topFrequentFoods = DatabaseManager.shared.getTopFrequentFoods(limit: 32)
     }
 
     private func saveNewFoodShortName() {

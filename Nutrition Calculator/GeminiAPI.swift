@@ -68,7 +68,7 @@ class GeminiAPI {
     }
     
     private func analyzeWithImageData(_ imageData: Data, completion: @escaping (Result<String, Error>) -> Void) {
-        guard let url = URL(string: "https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent") else {
+        guard let url = URL(string: "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent") else {
             completion(.failure(NSError(domain: "Invalid URL", code: 0, userInfo: nil)))
             return
         }
@@ -146,6 +146,84 @@ class GeminiAPI {
                     completion(.success(text))
                 } else {
                     print("❌ Unable to extract text from response structure")
+                    completion(.failure(NSError(domain: "Invalid response format", code: 0)))
+                }
+            } catch {
+                print("❌ JSON parsing error: \(error)")
+                print("Raw response: \(String(data: data, encoding: .utf8) ?? "Unable to decode")")
+                completion(.failure(error))
+            }
+        }.resume()
+    }
+    
+    func searchFoodNutrition(foodName: String, completion: @escaping (Result<String, Error>) -> Void) {
+        print("🔍 Gemini API: Starting food nutrition search for '\(foodName)'")
+        
+        guard let url = URL(string: "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent") else {
+            completion(.failure(NSError(domain: "Invalid URL", code: 0, userInfo: nil)))
+            return
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue(apiKey, forHTTPHeaderField: "x-goog-api-key")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("hsu.Nutrition-Calculator", forHTTPHeaderField: "X-Ios-Bundle-Identifier")
+
+        let prompt = "請搜尋一項食物：\(foodName)，並直接用 JSON 回答如下格式：{\"name\":..., \"calories\":..., \"protein\":..., \"fat\":..., \"carbs\":...}。請以這個食物的慣用單位位計算。例如：茶葉蛋是1個，白飯是1碗，蛋糕是1片來估計"
+        let requestBody: [String: Any] = [
+            "contents": [
+                [
+                    "parts": [
+                        ["text": prompt]
+                    ]
+                ]
+            ],
+            "generationConfig": [
+                "temperature": 0.2
+            ]
+        ]
+
+        do {
+            request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
+        } catch {
+            print("❌ Failed to serialize request body: \(error)")
+            completion(.failure(error))
+            return
+        }
+
+        print("🚀 Sending request to Gemini API for nutrition facts...")
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("❌ Network error: \(error.localizedDescription)")
+                completion(.failure(error))
+                return
+            }
+            
+            if let httpResponse = response as? HTTPURLResponse {
+                print("📡 HTTP Status: \(httpResponse.statusCode)")
+            }
+            
+            guard let data = data else {
+                print("❌ No data received")
+                completion(.failure(NSError(domain: "No data", code: 0)))
+                return
+            }
+            
+            do {
+                let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+                
+                if let candidates = json?["candidates"] as? [[String: Any]],
+                   let firstCandidate = candidates.first,
+                   let content = firstCandidate["content"] as? [String: Any],
+                   let parts = content["parts"] as? [[String: Any]],
+                   let firstPart = parts.first,
+                   let text = firstPart["text"] as? String {
+                    print("📝 Extracted text: \(text)")
+                    completion(.success(text))
+                } else {
+                    print("❌ Unable to extract text from response structure")
+                    print("Raw response: \(String(data: data, encoding: .utf8) ?? "Unable to decode")")
                     completion(.failure(NSError(domain: "Invalid response format", code: 0)))
                 }
             } catch {

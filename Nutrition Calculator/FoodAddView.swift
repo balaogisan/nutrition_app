@@ -22,8 +22,11 @@ struct FoodAddView: View {
     
     @State private var searchResults: [Food] = []
     @State private var isSearching = false
+    @State private var searchDebounceTimer: Timer? = nil
 
     @State private var isAnalyzing = false
+    @State private var isPhotoAnalysisComplete = false
+    @State private var isNameSelected = false // Flag to control search result visibility
     @State private var analysisPortions = "1" // For AI analysis
 
     var date: Date // The date to add the food to
@@ -33,20 +36,28 @@ struct FoodAddView: View {
         NavigationView {
             Form {
                 Section(header: Text(String(localized: "food_info_section_header"))) {
-                    TextField(String(localized: "food_name_placeholder"), text: $name)
-                    
-                    if isSearching && !searchResults.isEmpty {
-                        List(searchResults) { food in
-                            Button(action: {
-                                selectFood(food)
-                            }) {
-                                VStack(alignment: .leading) {
-                                    Text(food.name).font(.headline)
-                                    Text(String(format: NSLocalizedString("food_search_result_info", comment: ""), food.calories, food.protein))
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
+                    VStack(alignment: .leading) {
+                        TextField(String(localized: "food_name_placeholder"), text: $name)
+                        
+                        if isAnalyzing {
+                            ProgressView("搜尋中...")
+                        }
+                        
+                        if isSearching && !searchResults.isEmpty && !isNameSelected {
+                            List(searchResults) { food in
+                                Button(action: {
+                                    selectFood(food)
+                                }) {
+                                    VStack(alignment: .leading) {
+                                        Text(food.name).font(.headline)
+                                        Text(String(format: NSLocalizedString("food_search_result_info", comment: ""), food.calories, food.protein))
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                    }
                                 }
                             }
+                            .listStyle(PlainListStyle())
+                            .frame(height: searchResults.isEmpty ? 0 : 150) // Adjust height dynamically
                         }
                     }
                     
@@ -122,12 +133,27 @@ struct FoodAddView: View {
                 }
             }
             .onChange(of: name) { _, newValue in
+                if isPhotoAnalysisComplete {
+                    isPhotoAnalysisComplete = false // Reset the flag
+                    return
+                }
+                
+                isNameSelected = false // Reset when user types
+                searchDebounceTimer?.invalidate()
+                
                 if newValue.isEmpty {
                     isSearching = false
                     searchResults = []
-                } else {
-                    isSearching = true
-                    searchResults = DatabaseManager.shared.searchFood(byName: newValue)
+                    return
+                }
+                
+                isSearching = true
+                searchResults = DatabaseManager.shared.searchFood(byName: newValue)
+                
+                if searchResults.isEmpty {
+                    searchDebounceTimer = Timer.scheduledTimer(withTimeInterval: 0.8, repeats: false) { _ in
+                        searchFoodOnline(foodName: newValue)
+                    }
                 }
             }
             .onChange(of: selectedPhoto) { _, newValue in
@@ -163,7 +189,7 @@ struct FoodAddView: View {
         fat = String(format: "%.1f", food.fat)
         carbs = String(format: "%.1f", food.carbs)
         
-        // 清空搜尋結果並隱藏列表
+        isNameSelected = true
         isSearching = false
         searchResults = []
     }
@@ -177,7 +203,6 @@ struct FoodAddView: View {
             return
         }
         
-        // 如果份數大於1，將營養素除以份數，以一人份儲存
         if por > 1.0 {
             cal /= por
             pro /= por
@@ -198,8 +223,58 @@ struct FoodAddView: View {
         dismiss()
     }
     
+    private func searchFoodOnline(foodName: String) {
+        isAnalyzing = true
+        print("🌐 FoodAddView: Starting Gemini online search for '\(foodName)'")
+
+        GeminiAPI.shared.searchFoodNutrition(foodName: foodName) { result in
+            switch result {
+            case .success(let responseText):
+                print("📋 FoodAddView: Received response text from online search: \(responseText)")
+                
+                var jsonText = responseText
+                if responseText.contains("```json") {
+                    let components = responseText.components(separatedBy: "```json")
+                    if components.count > 1 {
+                        let afterJson = components[1]
+                        let jsonPart = afterJson.components(separatedBy: "```")[0]
+                        jsonText = jsonPart.trimmingCharacters(in: .whitespacesAndNewlines)
+                    }
+                }
+                
+                if let data = jsonText.data(using: .utf8),
+                   let dict = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                    print("✅ FoodAddView: Successfully parsed JSON from online search")
+                    
+                    DispatchQueue.main.async {
+                        let food = Food(
+                            id: 0, // Temporary ID
+                            name: (dict["name"] as? String) ?? foodName,
+                            shortName: "",
+                            calories: (dict["calories"] as? NSNumber)?.doubleValue ?? 0,
+                            protein: (dict["protein"] as? NSNumber)?.doubleValue ?? 0,
+                            fat: (dict["fat"] as? NSNumber)?.doubleValue ?? 0,
+                            carbs: (dict["carbs"] as? NSNumber)?.doubleValue ?? 0,
+                            date: Date(),
+                            portions: 1.0
+                        )
+                        self.searchResults = [food]
+                    }
+                } else {
+                    print("⚠️ FoodAddView: Response from online search is not JSON format")
+                }
+            case .failure(let error):
+                print("❌ FoodAddView: Gemini online search failed: \(error.localizedDescription)")
+            }
+            DispatchQueue.main.async {
+                isAnalyzing = false
+            }
+        }
+    }
+    
     private func analyzeWithGemini(imageData: Data) {
         isAnalyzing = true
+        searchDebounceTimer?.invalidate() // Cancel any pending online search
         print("🍽️ FoodAddView: Starting Gemini analysis")
         
         let portionsToAnalyze = Double(analysisPortions) ?? 1.0
@@ -209,10 +284,8 @@ struct FoodAddView: View {
             case .success(let responseText):
                 print("📋 FoodAddView: Received response text: \(responseText)")
                 
-                // Extract JSON from markdown format if present
                 var jsonText = responseText
                 if responseText.contains("```json") {
-                    // Extract content between ```json and ```
                     let components = responseText.components(separatedBy: "```json")
                     if components.count > 1 {
                         let afterJson = components[1]
@@ -222,13 +295,13 @@ struct FoodAddView: View {
                     }
                 }
                 
-                // Try to parse as JSON
                 if let data = jsonText.data(using: .utf8),
                    let dict = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
                     print("✅ FoodAddView: Successfully parsed JSON dictionary")
                     print("📊 Parsed data: \(dict)")
                     
                     DispatchQueue.main.async {
+                        isPhotoAnalysisComplete = true // Set the flag
                         let oldName = self.name
                         let oldCalories = self.calories
                         let oldProtein = self.protein
@@ -253,15 +326,13 @@ struct FoodAddView: View {
                         print("   Calories: '\(oldCalories)' → '\(self.calories)'")
                         print("   Protein: '\(oldProtein)' → '\(self.protein)'")
                         print("   Fat: '\(oldFat)' → '\(self.fat)'")
-                        print("   Carbs: '\(oldCarbs)' → '\(self.carbs)'")
+                        print("   Carbs: '\(oldCarbs)' → '\(self.carbs)'''")
                     }
                 } else {
                     print("⚠️ FoodAddView: Response is not JSON format")
                     print("Response text: \(responseText)")
                     
-                    // Show alert to user that the image wasn't recognized as food
                     DispatchQueue.main.async {
-                        // Here you could show an alert or update UI to indicate the image wasn't recognized
                         print("ℹ️ Image was not recognized as food by Gemini")
                     }
                 }
