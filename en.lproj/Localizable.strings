@@ -83,5 +83,8 @@
 "delete_food_button_title"='Delete the food';
 "edit_food_navigation_title"='Edit the Food Entrice';
 "delete_food_confirm_title"="Delete the food Entrice";
-"delete_food_confirm_message"="Do you confirm the deletion?";
+"delete_food_confirm_message" = "This action cannot be undone.";
+"record_info_section_header" = "Record Info";
+"creation_date_label" = "Creation Date";
+
 "delete_button"="Deletion";

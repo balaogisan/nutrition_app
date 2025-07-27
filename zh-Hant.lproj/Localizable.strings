@@ -80,8 +80,11 @@
 "portions_unit_label" = "人份";
 "portions_placeholder" = "輸入份數";
 "new_food_short_name_placeholder" = "填入食物簡稱";
-"delete_food_button_title"='刪除此食物';
-"edit_food_navigation_title"='食物資料編輯';
+"delete_food_button_title"="刪除此食物";
+"edit_food_navigation_title"="編輯食物資訊";
 "delete_food_confirm_title"="刪除此食物";
-"delete_food_confirm_message"="確定刪除嗎？";
+"delete_food_confirm_message" = "此操作無法復原。";
+"record_info_section_header" = "紀錄資訊";
+"creation_date_label" = "建立日期";
+
 "delete_button"="刪除";

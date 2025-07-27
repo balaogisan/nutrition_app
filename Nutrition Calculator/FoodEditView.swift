@@ -50,6 +50,18 @@ struct FoodEditView: View {
                         }
                     }
                 }
+
+                Section(header: Text(String(localized: "record_info_section_header"))) {
+                    HStack {
+                        Text(String(localized: "creation_date_label"))
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        Spacer()
+                        Text(food.date.formatted(date: .long, time: .standard))
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                }
                 
                 Section {
                     Button(role: .destructive) {
