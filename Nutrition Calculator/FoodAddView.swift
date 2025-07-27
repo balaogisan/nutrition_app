@@ -185,7 +185,11 @@ struct FoodAddView: View {
     }
 
     private func selectFood(_ food: Food) {
-        name = food.name
+        // Only update the name if it's a food from the local database (id != 0)
+        if food.id != 0 {
+            name = food.name
+        }
+        
         calories = String(format: "%.1f", food.calories)
         protein = String(format: "%.1f", food.protein)
         fat = String(format: "%.1f", food.fat)
@@ -286,8 +290,8 @@ struct FoodAddView: View {
                             weighs: (dict["weighs"] as? NSNumber)?.doubleValue,
                             results: foodResults
                         )
-                        // Automatically select the food to populate the fields
-                        self.selectFood(food)
+                        // Add the online result to the search list for user selection
+                        self.searchResults = [food]
                     }
                 } else {
                     print("⚠️ FoodAddView: Response from online search is not JSON format")
