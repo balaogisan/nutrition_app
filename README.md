@@ -14,7 +14,7 @@
     *   清晰的目標進度條，顯示當日熱量、蛋白質、脂肪的攝取進度。
     *   可隨時調整當日食物的份量。
 *   **快速新增食物**：
-    *   提供「快速選取」功能，列出最常吃的食物，點擊即可快速加入。
+    *   提供「快速選取」功能，列出最常吃的食物，��擊即可快速加入。
     *   新增食物時，會自動搜尋歷史紀錄，方便再次輸入。
 *   **本地數據儲存**：所有飲食紀錄、個人資料和目標都安全地儲存在裝置本地的 SQLite 資料庫中，確保隱私。
 
@@ -34,7 +34,7 @@
     *   這裡會顯示您最常吃的食物，點擊即可加入一整份。
 4.  **查看與管理**：
     *   在主畫面左右滑動，可以查看過去七天的飲食紀錄。
-    *   在食物清單上向左滑動，可以刪除該筆紀錄。
+    *   在食物清單上向左滑��，可以刪除該筆紀錄。
     *   點擊今日食物旁的 `+` / `-` 按鈕，可以快速調整份量。
 
 ## 🛠️ 所用技術
@@ -65,10 +65,54 @@
 4.  **編譯與執行**：
     選擇您的模擬器或實體裝置，點擊 "Run" 按鈕。
 
+## 🏛️ 資料庫實體關係圖 (ERD)
+
+```mermaid
+erDiagram
+    foods {
+        INTEGER id PK "主鍵"
+        TEXT name
+        TEXT shortName
+        REAL calories
+        REAL protein
+        REAL fat
+        REAL carbs
+        REAL date
+        REAL portions
+        REAL weighs "可選"
+        TEXT results "JSON 字串，可選"
+        TEXT imagePath "可選"
+    }
+
+    user_profiles {
+        INTEGER id PK "主鍵"
+        INTEGER age
+        TEXT gender
+        REAL weight
+        REAL body_fat_percentage
+        REAL height
+        TEXT fitness_goal
+        REAL created_at
+    }
+
+    nutrition_goals {
+        INTEGER id PK "主鍵"
+        REAL daily_calories
+        REAL daily_protein
+        REAL daily_fat
+        REAL created_at
+    }
+
+    user_profiles ||..o{ nutrition_goals : "生成建議"
+    user_profiles ||..o{ foods : "影響"
+    nutrition_goals ||..o{ foods : "作為目標"
+}
+```
+
 ## Build comments
 ```bash
 ad91ce7eab9e19c6bab06887d54c3f5867471c44 add nutrient names in Add new Food view
-126fc7eaf54abf0184e3b86ef2b6fbcbb1cddd94 add portion services field.
+126fc7eabf0184e3b86ef2b6fbcbb1cddd94 add portion services field.
 977767452262cb0b356f5d7a0826a1377a5df5e3 UiUpdate:short name
 4fb2a5f49a6f95958fc0f0c19720d06c029294d7 project configuration update
 f45fce0593c74a78238efc620b043c3e0264603d multilang update
