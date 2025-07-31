@@ -106,7 +106,7 @@ erDiagram
     user_profiles ||..o{ nutrition_goals : "生成建議"
     user_profiles ||..o{ foods : "影響"
     nutrition_goals ||..o{ foods : "作為目標"
-}
+
 ```
 
 ## Build comments
